@@ -3,40 +3,61 @@ import { MercadoPagoConfig, Preference, Payment, MerchantOrder } from 'mercadopa
 
 import mongoose from 'mongoose';
 import Order from './order.model.js';
-import Cart from '../cart/cart.model.js';
+// --- CAMBIO ---
+// import Cart from '../cart/cart.model.js'; // Ya no usamos el carrito de la BD
+// --- FIN CAMBIO ---
 import Product from '../products/product.model.js'; 
 
+// --- CAMBIO ---
 // @desc    Crear una nueva orden (con lógica de stock)
 // @route   POST /api/orders
-// @access  Private
+// @access  Public (Antes: Private)
 export const createOrder = async (req, res) => {
     
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        const { shippingAddress, paymentMethod, shippingCost } = req.body;
-        const usuarioId = req.usuario.id;
+        // Obtenemos los datos del invitado y el carrito desde el body
+        const { 
+            customerInfo, // { nombre, email, telefono }
+            shippingAddress, 
+            paymentMethod, 
+            shippingCost,
+            items // Array de items del carrito del frontend
+        } = req.body;
 
-        const cart = await Cart.findOne({ usuario: usuarioId }).populate('items.producto').session(session);
-        
-        if (!cart || cart.items.length === 0) {
+        // Validaciones básicas
+        if (!customerInfo || !customerInfo.nombre || !customerInfo.email) {
+            await session.abortTransaction();
+            return res.status(400).json({ msg: 'Los datos del cliente (nombre, email) son requeridos.' });
+        }
+        if (!items || items.length === 0) {
             await session.abortTransaction();
             return res.status(400).json({ msg: 'No hay productos en el carrito para crear una orden.' });
         }
-
+        
         const productsToUpdate = [];
         let calculatedSubtotal = 0;
+        const processedItems = []; // Array para los items con datos de la BD
 
-        for (const item of cart.items) {
-            const product = item.producto;
+        // Iteramos sobre los items del body para verificar stock y obtener precios de la BD
+        for (const item of items) {
+            const product = await Product.findById(item.producto).session(session);
+
+            if (!product) {
+                throw new Error(`Producto ${item.nombre} (ID: ${item.producto}) no encontrado.`);
+            }
+
             const stockDisponible = product.stock - product.stockComprometido;
 
             if (stockDisponible < item.cantidad) {
                 throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${stockDisponible} unidades disponibles.`);
             }
 
-            calculatedSubtotal += item.cantidad * item.precio;
+            // SEGURIDAD: Usamos el precio de la BD, no el del frontend
+            const priceFromDB = product.precio;
+            calculatedSubtotal += item.cantidad * priceFromDB;
 
             productsToUpdate.push({
                 updateOne: {
@@ -49,22 +70,24 @@ export const createOrder = async (req, res) => {
                     }
                 }
             });
+
+            // Guardamos los items procesados para la orden
+            processedItems.push({
+                nombre: product.nombre,
+                cantidad: item.cantidad,
+                imagen: product.imagen || '/images/sample.jpg',
+                precio: priceFromDB, // Precio de la BD
+                producto: product._id
+            });
         }
         
-        const items = cart.items.map(item => ({
-            nombre: item.producto.nombre,
-            cantidad: item.cantidad,
-            imagen: item.producto.imagen || '/images/sample.jpg',
-            precio: item.precio,
-            producto: item.producto._id
-        }));
-
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
+        // Creamos la orden con la nueva estructura (customerInfo)
         const order = new Order({
-            usuario: usuarioId,
-            items: items, 
+            customerInfo: customerInfo, // <-- NUEVO
+            items: processedItems, 
             shippingAddress,
             paymentMethod,
             subtotal: calculatedSubtotal,
@@ -75,8 +98,8 @@ export const createOrder = async (req, res) => {
 
         await Product.bulkWrite(productsToUpdate, { session });
         const createdOrder = await order.save({ session });
-        cart.items = [];
-        await cart.save({ session });
+        
+        // Ya no limpiamos el carrito de la BD
         await session.commitTransaction();
 
         res.status(201).json(createdOrder);
@@ -90,45 +113,29 @@ export const createOrder = async (req, res) => {
         session.endSession();
     }
 };
+// --- FIN CAMBIO ---
 
+// --- CAMBIO ---
 // @desc    Obtener las órdenes paginadas del usuario logueado
 // @route   GET /api/orders/myorders
 // @access  Private
-export const getMyOrders = async (req, res) => {
-    try {
-        const pageSize = 10; 
-        const page = Number(req.query.page) || Number(req.query.pageNumber) || 1;
-        
-        const count = await Order.countDocuments({ usuario: req.usuario.id });
+// --- ESTA FUNCIÓN FUE ELIMINADA ---
+// export const getMyOrders = ...
+// --- FIN CAMBIO ---
 
-        const orders = await Order.find({ usuario: req.usuario.id })
-            .sort({ createdAt: -1 }) 
-            .limit(pageSize) 
-            .skip(pageSize * (page - 1)); 
-
-        res.json({ 
-            orders, 
-            page, 
-            totalPages: Math.ceil(count / pageSize) 
-        });
-
-    } catch (error) {
-        console.error("Error en getMyOrders (paginado):", error);
-        res.status(500).json({ msg: 'Error en el servidor' });
-    }
-};
-
+// --- CAMBIO ---
 // @desc    Obtener una orden por su ID
 // @route   GET /api/orders/:id
-// @access  Private
+// @access  Public (Antes: Private)
 export const getOrderById = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id).populate('usuario', 'nombre email');
+        // Quitamos el populate de 'usuario'
+        const order = await Order.findById(req.params.id);
         
         if (order) {
-            if (order.usuario._id.toString() !== req.usuario.id && req.usuario.rol !== 'admin') {
-                return res.status(401).json({ msg: 'No autorizado para ver esta orden.' });
-            }
+            // Se elimina el chequeo de propiedad de la orden
+            // (if (order.usuario._id.toString() !== req.usuario.id && ...))
+            // Ahora la ruta es pública para el flujo de guest checkout
             res.json(order);
         } else {
             res.status(404).json({ msg: 'Orden no encontrada.' });
@@ -137,58 +144,25 @@ export const getOrderById = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor' });
     }
 };
+// --- FIN CAMBIO ---
 
+// --- CAMBIO ---
 // @desc    Actualizar una orden a 'pagada' (Webhook reemplazará esto)
 // @route   PUT /api/orders/:id/pay
 // @access  Private
-export const updateOrderToPaid = async (req, res) => {
-    try {
-        const order = await Order.findById(req.params.id);
-
-        if (order) {
-            if (order.usuario.toString() !== req.usuario.id) {
-                return res.status(401).json({ msg: 'No autorizado.' });
-            }
-
-            order.status = 'completada';
-            order.paidAt = Date.now();
-            order.paymentResult = { 
-                id: req.body.id || 'TEST_ID_MANUAL',
-                status: req.body.status || 'approved',
-                update_time: req.body.update_time || Date.now(),
-                email_address: req.body.email_address || 'test@example.com'
-            };
-
-            const productsToUpdate = order.items.map(item => ({
-                updateOne: {
-                    filter: { _id: item.producto },
-                    update: {
-                        $inc: { stockComprometido: -item.cantidad } 
-                    }
-                }
-            }));
-            await Product.bulkWrite(productsToUpdate);
-
-            const updatedOrder = await order.save();
-            res.json(updatedOrder);
-
-        } else {
-            res.status(404).json({ msg: 'Orden no encontrada.' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: 'Error en el servidor', error: error.message });
-    }
-};
+// --- ESTA FUNCIÓN FUE ELIMINADA (Flujo obsoleto) ---
+// export const updateOrderToPaid = ...
+// --- FIN CAMBIO ---
 
 
+// --- CAMBIO ---
 // @desc    Crear preferencia de pago de MercadoPago
 // @route   POST /api/orders/:id/create-payment-preference
-// @access  Private
+// @access  Public (Antes: Private)
 export const createMercadoPagoPreference = async (req, res) => {
     try {
         const { id: orderId } = req.params;
-        const usuarioId = req.usuario.id;
+        // const usuarioId = req.usuario.id; // <-- Eliminado
 
         if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
             console.error('ERROR: MERCADOPAGO_ACCESS_TOKEN no está definido en .env');
@@ -198,14 +172,16 @@ export const createMercadoPagoPreference = async (req, res) => {
         const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
         const backendURL = process.env.BACKEND_URL || 'http://localhost:4000'; 
 
-        const order = await Order.findById(orderId).populate('usuario', 'nombre email');
+        // Ya no populamos 'usuario'
+        const order = await Order.findById(orderId);
         
         if (!order) {
             return res.status(404).json({ msg: 'Orden no encontrada.' });
         }
-        if (order.usuario._id.toString() !== usuarioId) {
-            return res.status(401).json({ msg: 'No autorizado para acceder a esta orden.' });
-        }
+        
+        // Chequeo de propiedad eliminado
+        // if (order.usuario._id.toString() !== usuarioId) { ... }
+
         if (order.status !== 'pendiente') {
             return res.status(400).json({ msg: 'Esta orden no está pendiente de pago.' });
         }
@@ -228,7 +204,6 @@ export const createMercadoPagoPreference = async (req, res) => {
             description: item.nombre, 
         }));
 
-        // Agregar costo de envío como item adicional si existe
         if (order.shippingCost > 0) {
             items.push({
                 id: 'shipping',
@@ -243,16 +218,16 @@ export const createMercadoPagoPreference = async (req, res) => {
         const preferenceBody = {
             items: items,
             payer: {
-                name: "Test",
-                surname:"User",
-                email: 'TESTUSER7441100096875126960_@testuser.com',
+                // Usamos los datos del 'customerInfo' de la orden
+                name: order.customerInfo.nombre.split(' ')[0], // Asume primer nombre
+                surname: order.customerInfo.nombre.split(' ').slice(1).join(' ') || order.customerInfo.nombre, // Asume resto como apellido
+                email: order.customerInfo.email,
             },
             back_urls: {
                 success: `${frontendURL}/orden/${orderId}`, 
                 failure: `${frontendURL}/orden/${orderId}`, 
                 pending: `${frontendURL}/orden/${orderId}`  
             },
-            // auto_return: 'approved', // Lo dejamos comentado, causaba conflicto
             external_reference: orderId, 
             notification_url: `${backendURL}/api/orders/webhook/mercadopago` 
         };
@@ -265,7 +240,8 @@ export const createMercadoPagoPreference = async (req, res) => {
             init_point: result.init_point 
         });
 
-    } catch (error) {
+    } catch (error)
+ {
         console.error('Error al crear preferencia de MercadoPago:', error);
         if (error.response && error.response.data) {
             console.error('Detalle del error de MP:', error.response.data);
@@ -280,11 +256,14 @@ export const createMercadoPagoPreference = async (req, res) => {
         });
     }
 };
+// --- FIN CAMBIO ---
 
 // @desc    Recibir notificaciones (Webhook) de MercadoPago
 // @route   POST /api/orders/webhook/mercadopago
 // @access  Público
+// --- ESTA FUNCIÓN NO NECESITA CAMBIOS ---
 export const receiveMercadoPagoWebhook = async (req, res) => {
+    // ... (Tu lógica existente está perfecta, ya se basa en orderId)
     console.log('[MP Webhook] Notificación recibida.');
     console.log('Body:', JSON.stringify(req.body, null, 2));
     
@@ -411,6 +390,7 @@ export const receiveMercadoPagoWebhook = async (req, res) => {
 };
 
 
+// --- CAMBIO ---
 // @desc    Obtener todas las órdenes (Admin)
 // @route   GET /api/orders
 // @access  Private/Admin
@@ -419,7 +399,6 @@ export const getAllOrders = async (req, res) => {
         const pageSize = 20;
         const page = Number(req.query.page) || 1;
         
-        // Filtros
         const filters = {};
         if (req.query.status) filters.status = req.query.status;
         if (req.query.deliveryStatus) filters.deliveryStatus = req.query.deliveryStatus;
@@ -429,17 +408,12 @@ export const getAllOrders = async (req, res) => {
             if (req.query.endDate) filters.createdAt.$lte = new Date(req.query.endDate);
         }
 
-        // Búsqueda por nombre de cliente
+        // Búsqueda por nombre o email de cliente
         if (req.query.customerName) {
-            filters['usuario'] = await mongoose.model('User').findOne({
-                nombre: { $regex: req.query.customerName, $options: 'i' }
-            }).select('_id');
-            if (filters['usuario']) {
-                filters['usuario'] = filters['usuario']._id;
-            } else {
-                // Si no se encuentra el usuario, devolver array vacío
-                return res.json({ orders: [], page, totalPages: 0, total: 0 });
-            }
+            filters['customerInfo.nombre'] = { $regex: req.query.customerName, $options: 'i' };
+        }
+        if (req.query.customerEmail) {
+            filters['customerInfo.email'] = { $regex: req.query.customerEmail, $options: 'i' };
         }
 
         // Búsqueda por producto
@@ -449,7 +423,7 @@ export const getAllOrders = async (req, res) => {
 
         const count = await Order.countDocuments(filters);
         const orders = await Order.find(filters)
-            .populate('usuario', 'nombre email')
+            // .populate('usuario', 'nombre email') // <-- Eliminado
             .sort({ createdAt: -1 })
             .limit(pageSize)
             .skip(pageSize * (page - 1));
@@ -465,10 +439,12 @@ export const getAllOrders = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
     }
 };
+// --- FIN CAMBIO ---
 
 // @desc    Actualizar estado de entrega de una orden (Admin)
 // @route   PUT /api/orders/:id/delivery
 // @access  Private/Admin
+// --- ESTA FUNCIÓN NO NECESITA CAMBIOS ---
 export const updateDeliveryStatus = async (req, res) => {
     try {
         const { deliveryStatus } = req.body;
@@ -495,6 +471,7 @@ export const updateDeliveryStatus = async (req, res) => {
     }
 };
 
+// --- CAMBIO ---
 // @desc    Crear orden manual (Admin)
 // @route   POST /api/orders/manual
 // @access  Private/Admin
@@ -503,20 +480,16 @@ export const createManualOrder = async (req, res) => {
     session.startTransaction();
 
     try {
-        const { usuarioId, items, shippingAddress, paymentMethod, shippingCost, status, deliveryStatus } = req.body;
+        // Recibimos 'customerInfo' en lugar de 'usuarioId'
+        const { customerInfo, items, shippingAddress, paymentMethod, shippingCost, status, deliveryStatus } = req.body;
 
-        if (!usuarioId || !items || items.length === 0) {
+        if (!customerInfo || !customerInfo.nombre || !customerInfo.email || !items || items.length === 0) {
             await session.abortTransaction();
-            return res.status(400).json({ msg: 'Usuario y items son requeridos.' });
+            return res.status(400).json({ msg: 'customerInfo (nombre, email) y items son requeridos.' });
         }
-
-        // Verificar que el usuario existe
-        const User = mongoose.model('User');
-        const user = await User.findById(usuarioId).session(session);
-        if (!user) {
-            await session.abortTransaction();
-            return res.status(404).json({ msg: 'Usuario no encontrado.' });
-        }
+        
+        // Ya no verificamos el usuario
+        // const User = mongoose.model('User'); ...
 
         const productsToUpdate = [];
         let calculatedSubtotal = 0;
@@ -532,7 +505,9 @@ export const createManualOrder = async (req, res) => {
                 throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${stockDisponible} unidades disponibles.`);
             }
 
-            calculatedSubtotal += item.cantidad * item.precio;
+            // Usamos el precio de la BD
+            const priceFromDB = product.precio;
+            calculatedSubtotal += item.cantidad * priceFromDB;
 
             productsToUpdate.push({
                 updateOne: {
@@ -551,12 +526,12 @@ export const createManualOrder = async (req, res) => {
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
         const order = new Order({
-            usuario: usuarioId,
+            customerInfo: customerInfo, // <-- NUEVO
             items: items.map(item => ({
                 nombre: item.nombre,
                 cantidad: item.cantidad,
                 imagen: item.imagen || '/images/sample.jpg',
-                precio: item.precio,
+                precio: item.precio, // En admin manual confiamos en el precio dado
                 producto: item.producto
             })),
             shippingAddress: shippingAddress || {},
@@ -586,8 +561,8 @@ export const createManualOrder = async (req, res) => {
         const createdOrder = await order.save({ session });
         await session.commitTransaction();
 
-        const populatedOrder = await Order.findById(createdOrder._id).populate('usuario', 'nombre email');
-        res.status(201).json(populatedOrder);
+        // const populatedOrder = await Order.findById(createdOrder._id).populate('usuario', 'nombre email'); // <-- Eliminado
+        res.status(201).json(createdOrder); // Devolvemos la orden sin popular
 
     } catch (error) {
         await session.abortTransaction();
@@ -597,20 +572,19 @@ export const createManualOrder = async (req, res) => {
         session.endSession();
     }
 };
+// --- FIN CAMBIO ---
 
 // @desc    Disparador manual para limpiar órdenes expiradas (para Cron Job)
 // @route   GET /api/orders/trigger-cron
 // @access  Público
+// --- ESTA FUNCIÓN NO NECESITA CAMBIOS ---
 export const triggerOrderCleanup = async (req, res) => {
-    // --- (Opcional) Seguridad para el Cron Job ---
-    // Para evitar que cualquiera llame a esta URL, podemos
-    // agregar un "secret" que solo Render y nosotros sabemos.
+    // ... (Tu lógica existente está perfecta)
     const cronSecret = req.headers['x-cron-secret'];
     if (cronSecret !== process.env.CRON_SECRET) {
         console.warn('[CRON] Intento de ejecución de Cron Job SIN secreto.');
         return res.status(401).json({ msg: 'No autorizado.' });
     }
-    // ---------------------------------------------
     
     console.log('[CRON-ENDPOINT] Ejecutando tarea: Buscando órdenes pendientes expiradas...');
     const now = new Date();
@@ -670,6 +644,39 @@ export const triggerOrderCleanup = async (req, res) => {
     } catch (error) {
         console.error('[CRON-ENDPOINT] Error general al ejecutar la limpieza:', error);
         res.status(500).json({ msg: 'Error en el servidor durante la limpieza de órdenes.' });
+    }
+};
+// --- FIN CAMBIO ---
+
+// --- CAMBIO ---
+// @desc    Obtener una orden por ID y Email (para invitados)
+// @route   POST /api/orders/track
+// @access  Public
+export const trackOrder = async (req, res) => {
+    try {
+        const { orderId, email } = req.body;
+
+        if (!orderId || !email) {
+            return res.status(400).json({ msg: 'Se requiere ID de orden y email.' });
+        }
+
+        // Buscamos la orden que coincida con el ID y el email del cliente
+        const order = await Order.findOne({ 
+            _id: orderId, 
+            'customerInfo.email': email.toLowerCase() // Comparamos en minúsculas
+        });
+        
+        if (order) {
+            res.json(order);
+        } else {
+            res.status(404).json({ msg: 'Orden no encontrada o el email no coincide.' });
+        }
+    } catch (error) {
+        // Manejar error si el orderId no es un ObjectId válido
+        if (error.kind === 'ObjectId') {
+             return res.status(404).json({ msg: 'Orden no encontrada.' });
+        }
+        res.status(500).json({ msg: 'Error en el servidor' });
     }
 };
 // --- FIN CAMBIO ---

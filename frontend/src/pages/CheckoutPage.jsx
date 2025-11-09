@@ -12,9 +12,17 @@ import { calculateShippingCost } from '../services/shippingService.js';
 
 const CheckoutPage = () => {
     useDocumentTitle('Checkout')
-    // 1. OBTENEMOS el estado 'loading' de nuestro hook
     const { cart, itemCount, checkout, loading } = useCart(); 
     const navigate = useNavigate();
+
+    // --- INICIO CAMBIO ---
+    // 1. Añadimos estado para los datos del invitado
+    const [customerInfo, setCustomerInfo] = useState({
+        nombre: '',
+        email: '',
+        telefono: ''
+    });
+    // --- FIN CAMBIO ---
 
     const [shippingAddress, setShippingAddress] = useState({
         address: '',
@@ -29,6 +37,13 @@ const CheckoutPage = () => {
     const [shippingDistance, setShippingDistance] = useState(0);
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingMessage, setShippingMessage] = useState('');
+
+    // --- INICIO CAMBIO ---
+    // 2. Añadimos un manejador de cambio para los datos del invitado
+    const onCustomerChange = (e) => {
+        setCustomerInfo(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+    // --- FIN CAMBIO ---
 
     const onChange = (e) => {
         setShippingAddress(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -60,7 +75,6 @@ const CheckoutPage = () => {
                 setShippingCost(0);
                 setShippingMessage('');
             } else {
-                // Si hay error, usar costo mínimo como fallback
                 setShippingCost(500);
                 setShippingMessage('No se pudo calcular. Se aplicará costo mínimo.');
             }
@@ -69,7 +83,6 @@ const CheckoutPage = () => {
         }
     }, [cart.items]);
 
-    // Recalcular envío cuando cambian los items del carrito o la dirección
     useEffect(() => {
         if (shippingAddress.address && shippingAddress.city && shippingAddress.postalCode) {
             const timer = setTimeout(() => {
@@ -89,16 +102,19 @@ const CheckoutPage = () => {
         setIsProcessing(true);
         
         try {
+            // --- INICIO CAMBIO ---
+            // 3. Añadimos 'customerInfo' al objeto orderData que pasamos al checkout
             const orderData = {
+                customerInfo, // <-- AÑADIDO
                 shippingAddress,
                 paymentMethod: paymentMethod,
                 shippingCost: shippingCost
             };
+            // --- FIN CAMBIO ---
             
             const createdOrder = await checkout(orderData);
             toast.success('¡Orden creada con éxito!');
             
-            // Si es MercadoPago, redirigir a la página de la orden donde se genera el link de pago
             navigate(`/orden/${createdOrder._id}`);
         } catch (error) {
             console.error('Error al crear la orden:', error);
@@ -108,12 +124,10 @@ const CheckoutPage = () => {
         }
     };
 
-    // Si todavía está cargando la información inicial del carrito, mostramos un Spinner.
     if (loading) {
         return <Spinner />;
     }
 
-    // 2. AÑADIMOS una doble verificación: si el carrito no existe O si está vacío, no continuamos.
     if (!cart || itemCount === 0) {
         return (
             <div className={styles.pageContainer} style={{ textAlign: 'center' }}>
@@ -123,7 +137,6 @@ const CheckoutPage = () => {
         );
     }
 
-    // Si llegamos aquí, estamos 100% seguros de que 'cart' es un objeto y tiene items.
     const cartSubtotal = cart.items.reduce((total, item) => total + item.cantidad * item.precio, 0);
     const total = cartSubtotal + shippingCost;
 
@@ -147,8 +160,40 @@ const CheckoutPage = () => {
             <h2>Finalizar Compra</h2>
             <div className={styles.checkoutGrid}>
                 <div className={styles.shippingForm}>
-                    <h3>Información de Envío</h3>
                     <form onSubmit={handlePlaceOrder} className={styles.form}>
+                        {/* --- INICIO CAMBIO --- */}
+                        {/* 4. Agregamos los inputs para los datos del invitado */}
+                        <h3>Datos Personales</h3>
+                        <Input 
+                            label="Nombre Completo" 
+                            type="text" 
+                            name="nombre" 
+                            value={customerInfo.nombre}
+                            onChange={onCustomerChange} 
+                            required 
+                            placeholder="Nombre y Apellido"
+                        />
+                        <Input 
+                            label="Email" 
+                            type="email" 
+                            name="email" 
+                            value={customerInfo.email}
+                            onChange={onCustomerChange} 
+                            required 
+                            placeholder="tu@email.com"
+                        />
+                        <Input 
+                            label="Teléfono (Opcional)" 
+                            type="tel" 
+                            name="telefono" 
+                            value={customerInfo.telefono}
+                            onChange={onCustomerChange} 
+                            placeholder="Ej: 1122334455"
+                        />
+                        
+                        <h3 style={{marginTop: '1.5rem'}}>Información de Envío</h3>
+                        {/* --- FIN CAMBIO --- */}
+                        
                         <Input 
                             label="Dirección" 
                             type="text" 
@@ -222,7 +267,7 @@ const CheckoutPage = () => {
                         <Button 
                             type="submit" 
                             variant='primary' 
-                            disabled={isProcessing}
+                            disabled={isProcessing || isCalculatingShipping}
                             style={{ width: '100%', marginTop: '1rem' }}
                         >
                             {isProcessing ? 'Procesando...' : 'Confirmar Pedido'}

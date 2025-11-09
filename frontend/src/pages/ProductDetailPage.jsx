@@ -36,7 +36,7 @@ const ProductDetailPage = () => {
     }, [id]);
 
     const handleAddToCart = () => {
-        addItem(product._id, quantity);
+        addItem(product, quantity);
     };
 
     const handleStockEngaged = ()=>{

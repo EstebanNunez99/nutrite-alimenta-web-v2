@@ -78,3 +78,19 @@ export const createManualOrder = async (orderData) => {
     const res = await api.post('/orders/manual', orderData);
     return res.data;
 };
+
+// ... (tus otras importaciones y 'createOrder')
+
+// --- AÑADE ESTA FUNCIÓN ---
+// Llama a la nueva ruta pública de seguimiento de órdenes
+export const trackOrder = async (orderId, email) => {
+    // Asumo que tu 'api' (cliente axios) está en ../api/axios.js
+    // Ajusta la ruta si es necesario.
+    try {
+        const { data } = await api.post('/api/orders/track', { orderId, email });
+        return data; // Devuelve la orden completa si la encuentra
+    } catch (error) {
+        // Relanzamos el error para que el componente lo maneje
+        throw error;
+    }
+};

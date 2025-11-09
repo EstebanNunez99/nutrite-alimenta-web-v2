@@ -1,15 +1,16 @@
 import express from 'express';
 import { 
     createOrder, 
-    getMyOrders, 
+    // getMyOrders, // Eliminada
     getOrderById, 
-    updateOrderToPaid, 
+    // updateOrderToPaid, // Eliminada
     createMercadoPagoPreference,
     receiveMercadoPagoWebhook,
     triggerOrderCleanup,
     getAllOrders,
     updateDeliveryStatus,
-    createManualOrder
+    createManualOrder,
+    trackOrder // <-- Agregada
 } from './order.controller.js';
 import { authMiddleware } from '../../shared/middlewares/auth.middleware.js';
 import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js';
@@ -17,30 +18,40 @@ import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js';
 const router = express.Router();
 
 
-// Endpoint para cron job - debe estar antes del middleware de autenticación
+// --- RUTAS PÚBLICAS ---
+// (No requieren autenticación)
+
+// Endpoint para cron job
 router.get('/trigger-cron', triggerOrderCleanup);
 
 // Ruta pública para el Webhook de MercadoPago
 router.post('/webhook/mercadopago', receiveMercadoPagoWebhook);
 
-// --- Todas las siguientes rutas son PRIVADAS ---
-router.use(authMiddleware);
-
-// Rutas específicas primero (antes de las dinámicas)
+// Crear nueva orden (para invitados)
 router.post('/', createOrder);
-router.get('/myorders', getMyOrders);
 
-// --- Rutas de Admin (deben estar antes de /:id para evitar conflictos) ---
-// authMiddleware ya está aplicado arriba, solo agregamos adminMiddleware
-router.get('/', adminMiddleware, getAllOrders);
-router.post('/manual', adminMiddleware, createManualOrder);
+// Nueva ruta de seguimiento de orden (para invitados)
+router.post('/track', trackOrder);
 
-// Rutas dinámicas (deben ir después de las rutas específicas)
+// Obtener una orden por ID (público para página de éxito/seguimiento)
 router.get('/:id', getOrderById);
-router.put('/:id/pay', updateOrderToPaid);
+
+// Crear preferencia de pago (público, se llama después de crear la orden)
 router.post('/:id/create-payment-preference', createMercadoPagoPreference);
 
-// Rutas de Admin que usan parámetros dinámicos
-router.put('/:id/delivery', adminMiddleware, updateDeliveryStatus);
+
+// --- RUTAS DE ADMINISTRADOR ---
+// (Requieren autenticación y rol de admin)
+// Aplicamos los middlewares directamente a cada ruta de admin
+
+// Obtener todas las órdenes (Admin)
+router.get('/', authMiddleware, adminMiddleware, getAllOrders);
+
+// Crear orden manual (Admin)
+router.post('/manual', authMiddleware, adminMiddleware, createManualOrder);
+
+// Actualizar estado de entrega (Admin)
+router.put('/:id/delivery', authMiddleware, adminMiddleware, updateDeliveryStatus);
+
 
 export default router;

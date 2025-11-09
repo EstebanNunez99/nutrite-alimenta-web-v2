@@ -1,11 +1,16 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    usuario: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'User'
+    // --- INICIO DE NUESTROS CAMBIOS ---
+    // 1. Eliminamos el campo 'usuario' que referenciaba a 'User'.
+    // 2. Agregamos 'customerInfo' para guardar los datos del invitado.
+    customerInfo: {
+        nombre: { type: String, required: true, trim: true },
+        email: { type: String, required: true, lowercase: true, trim: true },
+        telefono: { type: String, trim: true, default: '' } // Opcional, pero recomendado
     },
+    // --- FIN DE NUESTROS CAMBIOS ---
+
     // 1. Renombrado para coherencia con 'Cart'
     items: [ 
         {
@@ -47,51 +52,37 @@ const orderSchema = new mongoose.Schema({
         default: 0.0
     },
 
-    // --- INICIO DE CAMBIOS ---
-
-    // 2. 'isPaid' se reemplaza por 'status' para más control
+    // Tus comentarios y campos originales
     status: {
         type: String,
         required: true,
-        enum: ['pendiente', 'completada', 'cancelada'], // Estados clave del flujo
+        enum: ['pendiente', 'completada', 'cancelada'],
         default: 'pendiente'
     },
-
-    // 3. 'paymentResult' guarda la info de la pasarela (MercadoPago)
     paymentResult: {
         id: { type: String },
-        status: { type: String }, // ej: "approved", "rejected"
+        status: { type: String },
         update_time: { type: String },
         email_address: { type: String }
     },
-
-    paidAt: { // Lo mantenemos, se actualiza cuando status es 'completada'
+    paidAt: {
         type: Date
     },
-
-    // 4. 'isDelivered' se puede manejar con un status de envío
     deliveryStatus: {
         type: String,
         required: true,
         enum: ['no_enviado', 'enviado', 'entregado'],
         default: 'no_enviado'
     },
-
-    deliveredAt: { // Lo mantenemos
+    deliveredAt: {
         type: Date
     },
-
-    // 5. Campo CRÍTICO para la "Tarea Programada" (Camino B)
     expiresAt: {
         type: Date,
-        // Seteamos una expiración (ej. 15 minutos) al crear la orden
         default: () => new Date(Date.now() + 20 * 60 * 1000),
-        // Creamos un índice para que la BD busque rápido las órdenes expiradas
         index: true 
     }
     
-    // --- FIN DE CAMBIOS ---
-
 }, {
     timestamps: true
 });

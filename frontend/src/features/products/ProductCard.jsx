@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
     const handleAddToCart = (e) => {
         e.preventDefault(); // Evita que el clic se propague al Link de la imagen/título
         e.stopPropagation();
-        addItem(product._id, 1); // Añade 1 por defecto desde la card
+        addItem(product, 1);
     };
 
     return (
