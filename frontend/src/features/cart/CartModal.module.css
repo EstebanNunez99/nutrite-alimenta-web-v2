@@ -1,0 +1,119 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    /* --- CAMBIO: Un poco más lento y con 'ease-out' para un final suave --- */
+    transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+}
+
+.overlay.isOpen {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    border-radius: 10px;
+    position: fixed;
+    top: 10%;
+    right: 1%;
+    height:85%;
+    width: 450px; /* Ancho del panel */
+    max-width: 90%;
+    background-color: var(--color-superficie);
+    box-shadow: -4px 0 15px rgba(0,0,0,0.2);
+
+    /* --- INICIO CAMBIO: Hacemos que también tenga 'opacity' --- */
+    transform: translateX(100%); /* Empieza fuera de la pantalla */
+    opacity: 0; /* Empieza invisible */
+    transition: transform 0.4s ease-out, opacity 0.3s ease-out; /* Tiempos distintos para un efecto pro */
+    /* --- FIN CAMBIO --- */
+
+    display: flex;
+    flex-direction: column;
+}
+
+.modal.isOpen {
+    transform: translateX(0); /* Se desliza a la vista */
+    opacity: 1; /* Se hace visible */
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--espaciado-sm);
+    border-bottom: 1px solid #eee;
+}
+
+.modalContent {
+    flex-grow: 1;
+    overflow-y: auto; /* Permite scroll si hay muchos productos */
+    padding: var(--espaciado-sm);
+}
+
+.modalFooter {
+    padding: var(--espaciado-sm);
+    border-top: 1px solid #eee;
+}
+
+/* Reutilizamos los estilos de CartPage para los items */
+.cartItems {
+    display: flex;
+    flex-direction: column;
+}
+
+.cartItem {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-superficie);
+    padding: var(--espaciado-sm);
+    border-radius: var(--borde-radio);
+    box-shadow: var(--sombra-suave);
+    margin-bottom: var(--espaciado-sm);
+}
+
+.modalControl{
+    display: flex;
+    flex-direction:column;
+}
+.quantityControl {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+
+}
+
+.quantityButton {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+.quantityButton:hover {
+    background-color: #e0e0e0;
+}
+.quantityButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quantityDisplay {
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
