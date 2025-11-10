@@ -1,8 +1,12 @@
-//revisado
+// frontend/src/pages/AdminSalesHistoryPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getAllOrders, updateDeliveryStatus } from '../services/orderService';
+// --- CAMBIO ---
+// Importamos la nueva función updateOrderStatus
+import { getAllOrders, updateDeliveryStatus, updateOrderStatus } from '../services/orderService';
+// --- FIN CAMBIO ---
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -19,7 +23,6 @@ const AdminSalesHistoryPage = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     
-    // Filtros
     const [filters, setFilters] = useState({
         status: '',
         deliveryStatus: '',
@@ -50,7 +53,7 @@ const AdminSalesHistoryPage = () => {
 
     const handleFilterChange = (field, value) => {
         setFilters(prev => ({ ...prev, [field]: value }));
-        setPage(1); // Resetear a la primera página al filtrar
+        setPage(1);
     };
 
     const handleDeliveryStatusChange = async (orderId, newStatus) => {
@@ -59,10 +62,27 @@ const AdminSalesHistoryPage = () => {
             toast.success('Estado de entrega actualizado');
             loadOrders();
         } catch (error) {
-            console.error('Error al actualizar estado:', error);
+            console.error('Error al actualizar estado de entrega:', error);
             toast.error('Error al actualizar el estado de entrega');
         }
     };
+
+    // --- CAMBIO ---
+    // Nueva función para manejar el cambio de estado de pago
+    const handleStatusChange = async (orderId, newStatus) => {
+        if (!window.confirm(`¿Estás seguro de cambiar el estado a "${newStatus}"? Esto afectará el stock.`)) {
+            return;
+        }
+        try {
+            await updateOrderStatus(orderId, newStatus);
+            toast.success(`Orden marcada como ${newStatus}`);
+            loadOrders(); // Recargamos para ver los cambios
+        } catch (error) {
+            console.error('Error al actualizar estado de pago:', error);
+            toast.error(error.response?.data?.msg || 'Error al actualizar el estado de pago');
+        }
+    };
+    // --- FIN CAMBIO ---
 
     const getStatusBadge = (status) => {
         const badges = {
@@ -108,11 +128,11 @@ const AdminSalesHistoryPage = () => {
             <div className={styles.header}>
                 <h2>Historial de Ventas</h2>
                 <Button onClick={() => navigate('/admin/orders/manual')} variant="primary">
-                    Crear Venta Manual
+                    + Nueva Venta
                 </Button>
             </div>
 
-            {/* Filtros */}
+            {/* ... (Sección de Filtros - sin cambios) ... */}
             <div className={styles.filters}>
                 <h3>Filtros</h3>
                 <div className={styles.filterGrid}>
@@ -199,12 +219,10 @@ const AdminSalesHistoryPage = () => {
                 </Button>
             </div>
 
-            {/* Resumen */}
             <div className={styles.summary}>
                 <p>Total de órdenes: <strong>{total}</strong></p>
             </div>
 
-            {/* Tabla de órdenes */}
             <div className={styles.tableContainer}>
                 {orders.length === 0 ? (
                     <p className={styles.noData}>No se encontraron órdenes</p>
@@ -215,11 +233,12 @@ const AdminSalesHistoryPage = () => {
                                 <th>ID</th>
                                 <th>Cliente</th>
                                 <th>Fecha</th>
-                                <th>Productos</th>
                                 <th>Total</th>
                                 <th>Estado Pago</th>
                                 <th>Estado Entrega</th>
+                                {/* --- CAMBIO --- */}
                                 <th>Acciones</th>
+                                {/* --- FIN CAMBIO --- */}
                             </tr>
                         </thead>
                         <tbody>
@@ -237,38 +256,43 @@ const AdminSalesHistoryPage = () => {
                                                 {order._id.substring(0, 8)}...
                                             </button>
                                         </td>
-                                        {/* --- CAMBIO CRÍTICO --- */}
-                                        {/* Usamos customerInfo en lugar de usuario */}
                                         <td>
                                             {order.customerInfo?.nombre || 'N/A'}
                                             <br />
                                             <small>{order.customerInfo?.email || ''}</small>
                                         </td>
-                                        {/* --- FIN CAMBIO --- */}
                                         <td>{formatDate(order.createdAt)}</td>
-                                        <td>
-                                            {order.items.length} item(s)
-                                            <br />
-                                            <small>
-                                                {order.items.slice(0, 2).map(item => item.nombre).join(', ')}
-                                                {order.items.length > 2 && '...'}
-                                            </small>
-                                        </td>
                                         <td>{formatCurrency(order.totalPrice)}</td>
                                         <td>
                                             <span className={`${styles.badge} ${statusBadge.class}`}>
                                                 {statusBadge.label}
                                             </span>
+                                            {/* --- CAMBIO: Selector de estado de pago --- */}
+                                            {order.status === 'pendiente' && (
+                                                <select
+                                                    className={styles.statusSelect}
+                                                    value={order.status}
+                                                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                    style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}
+                                                >
+                                                    <option value="pendiente">Pendiente</option>
+                                                    <option value="completada">Marcar Pagada</option>
+                                                    <option value="cancelada">Cancelar Orden</option>
+                                                </select>
+                                            )}
+                                            {/* --- FIN CAMBIO --- */}
                                         </td>
                                         <td>
                                             <span className={`${styles.badge} ${deliveryBadge.class}`}>
                                                 {deliveryBadge.label}
                                             </span>
+                                            {/* Solo permitimos cambiar entrega si está pagada */}
                                             {order.status === 'completada' && (
                                                 <select
                                                     className={styles.statusSelect}
                                                     value={order.deliveryStatus}
                                                     onChange={(e) => handleDeliveryStatusChange(order._id, e.target.value)}
+                                                    style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}
                                                 >
                                                     <option value="no_enviado">No Enviado</option>
                                                     <option value="enviado">Enviado</option>
@@ -280,6 +304,7 @@ const AdminSalesHistoryPage = () => {
                                             <Button
                                                 variant="secondary"
                                                 onClick={() => navigate(`/orden/${order._id}`)}
+                                                style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
                                             >
                                                 Ver Detalle
                                             </Button>
@@ -292,7 +317,7 @@ const AdminSalesHistoryPage = () => {
                 )}
             </div>
 
-            {/* Paginación */}
+            {/* ... (Paginación - sin cambios) ... */}
             {totalPages > 1 && (
                 <div className={styles.pagination}>
                     <Button

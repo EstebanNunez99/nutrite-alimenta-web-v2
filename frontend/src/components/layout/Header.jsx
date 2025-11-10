@@ -46,7 +46,7 @@ const NavLinks = ({ onLinkClick }) => {
           
           {/* Reemplazamos "Mis Pedidos" por "Seguimiento" */}
           <Button to="/seguimiento" variant="link" onClick={onLinkClick}>
-            Seguimiento
+            Mi pedido
           </Button>
           
           <Button variant="link" onClick={handleCartClick}>

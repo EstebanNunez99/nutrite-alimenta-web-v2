@@ -24,7 +24,7 @@ const Footer = () => {
             <li><Link to="/productos">Catálogo</Link></li>
             {/* --- INICIO CAMBIO --- */}
             {/* Eliminamos "Mi Perfil" y agregamos enlaces públicos */}
-            <li><Link to="/seguimiento">Seguimiento</Link></li>
+            <li><Link to="/seguimiento">Mi pedido</Link></li>
             <li><Link to="/auth">Admin</Link></li>
             {/* --- FIN CAMBIO --- */}
           </ul>

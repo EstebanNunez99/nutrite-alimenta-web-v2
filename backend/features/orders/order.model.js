@@ -1,18 +1,14 @@
-//revisado
+// backend/features/orders/order.model.js
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    // --- INICIO DE NUESTROS CAMBIOS ---
-    // 1. Eliminamos el campo 'usuario' que referenciaba a 'User'.
-    // 2. Agregamos 'customerInfo' para guardar los datos del invitado.
     customerInfo: {
         nombre: { type: String, required: true, trim: true },
         email: { type: String, required: true, lowercase: true, trim: true },
-        telefono: { type: String, trim: true, default: '' } // Opcional, pero recomendado
+        // --- INICIO CAMBIO ---
+        telefono: { type: String, required: true, trim: true } // Ahora es obligatorio
+        // --- FIN CAMBIO ---
     },
-    // --- FIN DE NUESTROS CAMBIOS ---
-
-    // 1. Renombrado para coherencia con 'Cart'
     items: [ 
         {
             nombre: { type: String, required: true },
@@ -29,13 +25,15 @@ const orderSchema = new mongoose.Schema({
     shippingAddress: {
         address: { type: String, required: true },
         city: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        country: { type: String, required: true }
+        // --- INICIO CAMBIO ---
+        postalCode: { type: String, required: false }, // Ya no es obligatorio
+        country: { type: String, required: false }    // Ya no es obligatorio
+        // --- FIN CAMBIO ---
     },
     paymentMethod: {
         type: String,
         required: true,
-        default: 'MercadoPago' // Actualizado a tu elección
+        default: 'MercadoPago'
     },
     totalPrice: {
         type: Number,
@@ -52,8 +50,6 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 0.0
     },
-
-    // Tus comentarios y campos originales
     status: {
         type: String,
         required: true,

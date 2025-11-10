@@ -678,3 +678,83 @@ export const trackOrder = async (req, res) => {
     }
 };
 // --- FIN CAMBIO ---
+// @desc    Actualizar estado de una orden (Admin)
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+export const updateOrderStatus = async (req, res) => {
+    const { status } = req.body; // Esperamos 'completada' o 'cancelada'
+    const { id: orderId } = req.params;
+
+    if (!status || !['completada', 'cancelada'].includes(status)) {
+        return res.status(400).json({ msg: 'Estado no válido. Solo se permite "completada" o "cancelada".' });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const order = await Order.findById(orderId).session(session);
+        if (!order) {
+            await session.abortTransaction();
+            return res.status(404).json({ msg: 'Orden no encontrada.' });
+        }
+
+        // No se puede cambiar un estado que ya está finalizado
+        if (order.status === 'completada' || order.status === 'cancelada') {
+            await session.abortTransaction();
+            return res.status(400).json({ msg: `La orden ya está ${order.status}.` });
+        }
+
+        let productsToUpdate = [];
+
+        if (status === 'completada') {
+            // El admin confirma el pago (ej. efectivo recibido)
+            // Liberamos el stock comprometido (igual que el webhook de MP)
+            productsToUpdate = order.items.map(item => ({
+                updateOne: {
+                    filter: { _id: item.producto },
+                    update: { 
+                        $inc: { stockComprometido: -item.cantidad } 
+                    }
+                }
+            }));
+            
+            order.status = 'completada';
+            order.paidAt = new Date(); // Marcamos la fecha de pago
+            order.paymentMethod = order.paymentMethod || 'Manual'; // Asignamos 'Manual' si no tiene método
+
+        } else if (status === 'cancelada') {
+            // El admin cancela la orden
+            // Devolvemos el stock al inventario (igual que el Cron Job)
+            productsToUpdate = order.items.map(item => ({
+                updateOne: {
+                    filter: { _id: item.producto },
+                    update: {
+                        $inc: {
+                            stock: item.cantidad,
+                            stockComprometido: -item.cantidad 
+                        }
+                    }
+                }
+            }));
+            
+            order.status = 'cancelada';
+        }
+
+        if (productsToUpdate.length > 0) {
+            await Product.bulkWrite(productsToUpdate, { session });
+        }
+        
+        const updatedOrder = await order.save({ session });
+        await session.commitTransaction();
+        
+        res.json(updatedOrder);
+
+    } catch (error) {
+        await session.abortTransaction();
+        console.error('Error al actualizar estado de orden (admin):', error);
+        res.status(500).json({ msg: 'Error en el servidor', error: error.message });
+    } finally {
+        session.endSession();
+    }
+};

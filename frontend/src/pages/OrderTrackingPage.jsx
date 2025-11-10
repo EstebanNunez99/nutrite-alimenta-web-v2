@@ -52,9 +52,9 @@ const OrderTrackingPage = () => {
 
     return (
         // Reutilizamos el 'authContainer' para un look consistente
-        <div className={styles.authContainer}>
-            <div className={styles.authFormBox}>
-                <h2 className={styles.formTitle}>Rastrear tu Pedido</h2>
+        <div className={styles.pageContainer}>
+            <div className={styles.form}>
+                <h2 className={styles.formTitle}>Seguí el estado de tu pedido</h2>
                 <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#666' }}>
                     Ingresa el ID de tu orden y tu email para ver el estado.
                 </p>
@@ -86,7 +86,7 @@ const OrderTrackingPage = () => {
                         disabled={loading} 
                         style={{ width: '100%', marginTop: '1rem' }}
                     >
-                        {loading ? <Spinner size="sm" /> : 'Rastrear Pedido'}
+                        {loading ? <Spinner size="sm" /> : 'Ver estado de Pedido'}
                     </Button>
                 </form>
             </div>

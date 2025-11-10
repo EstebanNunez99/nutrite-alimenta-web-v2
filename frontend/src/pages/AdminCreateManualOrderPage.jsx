@@ -1,15 +1,11 @@
-//verificado
 // frontend/src/pages/AdminCreateManualOrderPage.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-// --- CAMBIO ---
-// import { getAllUsers } from '../services/userService'; // Eliminado
 import { getAllProducts } from '../services/productService';
 import { createManualOrder } from '../services/orderService';
 import { calculateShippingCost } from '../services/shippingService';
-// --- FIN CAMBIO ---
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Spinner from '../components/ui/Spinner';
@@ -22,29 +18,23 @@ const AdminCreateManualOrderPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    // --- CAMBIO ---
-    // const [users, setUsers] = useState([]); // Eliminado
     const [products, setProducts] = useState([]);
-    // const [searchUser, setSearchUser] = useState(''); // Eliminado
     const [searchProduct, setSearchProduct] = useState('');
-    // --- FIN CAMBIO ---
 
     const [orderData, setOrderData] = useState({
-        // --- CAMBIO ---
-        // usuarioId: '', // Eliminado
-        customerInfo: { // Añadido
+        customerInfo: {
             nombre: '',
             email: '',
             telefono: ''
         },
-        // --- FIN CAMBIO ---
         items: [],
+        // --- INICIO CAMBIO ---
+        // Simplificamos el objeto de dirección
         shippingAddress: {
             address: '',
             city: '',
-            postalCode: '',
-            country: 'Argentina'
         },
+        // --- FIN CAMBIO ---
         paymentMethod: 'Efectivo',
         shippingCost: 0,
         status: 'completada',
@@ -58,12 +48,8 @@ const AdminCreateManualOrderPage = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            // --- CAMBIO ---
-            // Ya no cargamos usuarios
             const productsData = await getAllProducts(1, '', '', '');
-            // setUsers(usersData.users || []); // Eliminado
             setProducts(productsData.products || []);
-            // --- FIN CAMBIO ---
         } catch (error) {
             console.error('Error al cargar datos:', error);
             toast.error('Error al cargar productos');
@@ -72,8 +58,6 @@ const AdminCreateManualOrderPage = () => {
         }
     };
     
-    // --- CAMBIO ---
-    // Añadido nuevo handler para los inputs del cliente
     const handleCustomerChange = (field, value) => {
         setOrderData(prev => ({
             ...prev,
@@ -83,10 +67,9 @@ const AdminCreateManualOrderPage = () => {
             }
         }));
     };
-    // --- FIN CAMBIO ---
 
     const handleAddProduct = (product) => {
-        // ... (Tu lógica para añadir productos está bien y no necesita cambios)
+        // ... (Tu lógica para añadir productos está bien) ...
         const existingItem = orderData.items.find(item => item.producto === product._id);
         if (existingItem) {
             setOrderData(prev => ({
@@ -116,7 +99,7 @@ const AdminCreateManualOrderPage = () => {
     };
 
     const handleRemoveItem = (productId) => {
-        // ... (Tu lógica está bien)
+        // ... (Tu lógica está bien) ...
         setOrderData(prev => ({
             ...prev,
             items: prev.items.filter(item => item.producto !== productId)
@@ -124,7 +107,7 @@ const AdminCreateManualOrderPage = () => {
     };
 
     const handleUpdateQuantity = (productId, quantity) => {
-        // ... (Tu lógica está bien)
+        // ... (Tu lógica está bien) ...
         if (quantity < 1) {
             handleRemoveItem(productId);
             return;
@@ -139,14 +122,17 @@ const AdminCreateManualOrderPage = () => {
         }));
     };
 
+    // --- INICIO CAMBIO ---
+    // Actualizamos la lógica de cambio y cálculo
     const handleAddressChange = async (field, value) => {
-        // ... (Tu lógica está bien)
         const newAddress = { ...orderData.shippingAddress, [field]: value };
         setOrderData(prev => ({ ...prev, shippingAddress: newAddress }));
 
-        if (newAddress.address && newAddress.city && newAddress.postalCode) {
+        // Calcular envío solo con dirección y ciudad
+        if (newAddress.address && newAddress.city) {
             try {
                 const subtotal = orderData.items.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+                // El backend ya sabe que solo recibirá address y city
                 const result = await calculateShippingCost(newAddress, subtotal);
                 setOrderData(prev => ({
                     ...prev,
@@ -157,6 +143,7 @@ const AdminCreateManualOrderPage = () => {
             }
         }
     };
+    // --- FIN CAMBIO ---
 
     const calculateSubtotal = () => {
         return orderData.items.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
@@ -169,10 +156,10 @@ const AdminCreateManualOrderPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // --- CAMBIO ---
-        // Validamos el customerInfo en lugar del usuarioId
-        if (!orderData.customerInfo.nombre || !orderData.customerInfo.email) {
-            toast.error('Debe completar el nombre y email del cliente');
+        // --- INICIO CAMBIO ---
+        // Añadimos validación para el teléfono
+        if (!orderData.customerInfo.nombre || !orderData.customerInfo.email || !orderData.customerInfo.telefono) {
+            toast.error('Debe completar el nombre, email y teléfono del cliente');
             return;
         }
         // --- FIN CAMBIO ---
@@ -184,7 +171,6 @@ const AdminCreateManualOrderPage = () => {
 
         setSaving(true);
         try {
-            // El 'orderData' ahora contiene 'customerInfo' y la API lo aceptará
             const createdOrder = await createManualOrder(orderData);
             toast.success('Venta creada exitosamente');
             navigate(`/orden/${createdOrder._id}`);
@@ -196,10 +182,6 @@ const AdminCreateManualOrderPage = () => {
         }
     };
 
-    // --- CAMBIO ---
-    // Eliminada la variable 'filteredUsers'
-    // --- FIN CAMBIO ---
-
     const filteredProducts = products.filter(product =>
         product.nombre.toLowerCase().includes(searchProduct.toLowerCase())
     );
@@ -210,12 +192,9 @@ const AdminCreateManualOrderPage = () => {
 
     return (
         <div className={styles.container}>
-            <h2>Crear Venta Manual</h2>
-
+            <h2> + Nueva Venta</h2>
             <form onSubmit={handleSubmit} className={styles.form}>
                 
-                {/* --- CAMBIO --- */}
-                {/* Sección de Cliente Reemplazada */}
                 <div className={styles.section}>
                     <h3>Datos del Cliente</h3>
                     <Input
@@ -234,17 +213,18 @@ const AdminCreateManualOrderPage = () => {
                         placeholder="email@cliente.com"
                         required
                     />
+                    {/* --- INICIO CAMBIO --- */}
                     <Input
-                        label="Teléfono (Opcional)"
+                        label="Teléfono"
                         type="tel"
                         value={orderData.customerInfo.telefono}
                         onChange={(e) => handleCustomerChange('telefono', e.target.value)}
+                        required // <-- AHORA ES OBLIGATORIO
                     />
+                    {/* --- FIN CAMBIO --- */}
                 </div>
-                {/* --- FIN CAMBIO --- */}
 
-
-                {/* Agregar Productos (Esta sección está bien) */}
+                {/* ... (Sección de Productos - sin cambios) ... */}
                 <div className={styles.section}>
                     <h3>Productos</h3>
                     <Input
@@ -305,7 +285,8 @@ const AdminCreateManualOrderPage = () => {
                     )}
                 </div>
 
-                {/* Dirección de Envío (Esta sección está bien) */}
+                {/* --- INICIO CAMBIO --- */}
+                {/* Sección de Dirección de Envío Simplificada */}
                 <div className={styles.section}>
                     <h3>Dirección de Envío</h3>
                     <Input
@@ -322,24 +303,11 @@ const AdminCreateManualOrderPage = () => {
                         onChange={(e) => handleAddressChange('city', e.target.value)}
                         required
                     />
-                    <p>*Recordatorio de mejora: Sacar código postal? y país</p>
-                    <Input
-                        label="Código Postal"
-                        type="text"
-                        value={orderData.shippingAddress.postalCode}
-                        onChange={(e) => handleAddressChange('postalCode', e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="País"
-                        type="text"
-                        value={orderData.shippingAddress.country}
-                        onChange={(e) => handleAddressChange('country', e.target.value)}
-                        required
-                    />
+                    {/* Campos de Código Postal y País eliminados */}
                 </div>
+                {/* --- FIN CAMBIO --- */}
 
-                {/* Método de Pago y Estados (Esta sección está bien) */}
+                {/* ... (Sección de Configuración - sin cambios) ... */}
                 <div className={styles.section}>
                     <h3>Configuración</h3>
                     <div>
@@ -380,7 +348,7 @@ const AdminCreateManualOrderPage = () => {
                     </div>
                 </div>
 
-                {/* Resumen (Esta sección está bien) */}
+                {/* ... (Sección de Resumen - sin cambios) ... */}
                 <div className={styles.section}>
                     <h3>Resumen</h3>
                     <div className={styles.summary}>
@@ -399,6 +367,7 @@ const AdminCreateManualOrderPage = () => {
                     </div>
                 </div>
 
+                {/* ... (Acciones - sin cambios) ... */}
                 <div className={styles.actions}>
                     <Button
                         type="button"

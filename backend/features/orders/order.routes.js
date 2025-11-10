@@ -11,7 +11,8 @@ import {
     getAllOrders,
     updateDeliveryStatus,
     createManualOrder,
-    trackOrder // <-- Agregada
+    trackOrder,
+    updateOrderStatus
 } from './order.controller.js';
 import { authMiddleware } from '../../shared/middlewares/auth.middleware.js';
 import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js';
@@ -54,5 +55,6 @@ router.post('/manual', authMiddleware, adminMiddleware, createManualOrder);
 // Actualizar estado de entrega (Admin)
 router.put('/:id/delivery', authMiddleware, adminMiddleware, updateDeliveryStatus);
 
+router.put('/:id/status', authMiddleware, adminMiddleware, updateOrderStatus);
 
 export default router;

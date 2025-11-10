@@ -75,3 +75,13 @@ export const createManualOrder = async (orderData) => {
     const res = await api.post('/orders/manual', orderData);
     return res.data;
 };
+
+/**
+ * Actualizar estado de pago de una orden (Admin)
+ * Llama a: PUT /api/orders/:id/status
+ */
+export const updateOrderStatus = async (orderId, status) => {
+    // 'status' debe ser "completada" o "cancelada"
+    const res = await api.put(`/orders/${orderId}/status`, { status });
+    return res.data;
+};

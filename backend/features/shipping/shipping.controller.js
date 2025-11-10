@@ -1,8 +1,9 @@
-//revisado
+// backend/features/shipping/shipping.controller.js
 import ShippingConfig from './shipping.model.js';
 import axios from 'axios';
 
-// Utilidad para obtener coordenadas de una dirección usando Google Geocoding API
+// Utilidad para obtener coordenadas de una dirección usando Google Geocode API
+// (Esta función la dejamos igual)
 const getCoordinates = async (address, city, postalCode, country) => {
     try {
         const fullAddress = `${address}, ${city}, ${postalCode}, ${country}`;
@@ -34,6 +35,7 @@ const getCoordinates = async (address, city, postalCode, country) => {
     }
 };
 
+// ... (calculateDistance y calculateDistanceWithAPI se mantienen igual) ...
 // Utilidad para calcular distancia entre dos puntos (fórmula de Haversine)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Radio de la Tierra en km
@@ -98,12 +100,16 @@ export const updateShippingConfig = async (req, res) => {
 
         // Obtener coordenadas de la dirección de referencia si está presente
         if (referenceAddress && referenceAddress.address) {
+            // --- INICIO CAMBIO ---
+            // Asumimos que la tienda está en Resistencia, Argentina.
+            // Ya no usamos postalCode.
             const coords = await getCoordinates(
                 referenceAddress.address,
-                referenceAddress.city || '',
-                referenceAddress.postalCode || '',
-                referenceAddress.country || 'Argentina'
+                referenceAddress.city || 'Resistencia', // Fallback a Resistencia
+                '', // postalCode se omite
+                'Argentina' // Se fija el país
             );
+            // --- FIN CAMBIO ---
             if (coords) {
                 referenceAddress.latitude = coords.latitude;
                 referenceAddress.longitude = coords.longitude;
@@ -139,8 +145,8 @@ export const calculateShippingCost = async (req, res) => {
     try {
         const { shippingAddress, orderTotal } = req.body;
 
-        if (!shippingAddress) {
-            return res.status(400).json({ msg: 'Dirección de envío requerida' });
+        if (!shippingAddress || !shippingAddress.address || !shippingAddress.city) {
+            return res.status(400).json({ msg: 'Se requiere dirección y ciudad de envío' });
         }
 
         const config = await ShippingConfig.getConfig();
@@ -153,7 +159,6 @@ export const calculateShippingCost = async (req, res) => {
             });
         }
 
-        // Verificar si hay envío gratis por monto mínimo
         if (config.shippingRates.freeShippingAmount > 0 && orderTotal >= config.shippingRates.freeShippingAmount) {
             return res.json({
                 cost: 0,
@@ -163,27 +168,29 @@ export const calculateShippingCost = async (req, res) => {
             });
         }
 
-        // Obtener coordenadas de ambas direcciones
         const originCoords = config.referenceAddress.latitude && config.referenceAddress.longitude 
             ? { latitude: config.referenceAddress.latitude, longitude: config.referenceAddress.longitude }
             : null;
 
+        // --- INICIO CAMBIO ---
+        // Llamamos a getCoordinates solo con la info necesaria.
+        // Fijamos "Argentina" como país y omitimos postalCode.
         const destinationCoords = await getCoordinates(
             shippingAddress.address,
-            shippingAddress.city || '',
-            shippingAddress.postalCode || '',
-            shippingAddress.country || 'Argentina'
+            shippingAddress.city,
+            '', // postalCode (omitido)
+            'Argentina' // country (fijo)
         );
+        // --- FIN CAMBIO ---
 
         let distance = 0;
 
         if (originCoords && destinationCoords) {
-            // Intentar usar la API de Google primero
+            // ... (el resto de tu lógica de cálculo de distancia es correcta) ...
             const apiDistance = await calculateDistanceWithAPI(originCoords, destinationCoords);
             if (apiDistance) {
                 distance = apiDistance;
             } else {
-                // Fallback a cálculo manual
                 distance = calculateDistance(
                     originCoords.latitude,
                     originCoords.longitude,
@@ -192,17 +199,14 @@ export const calculateShippingCost = async (req, res) => {
                 );
             }
         } else {
-            // Si no hay coordenadas, usar una estimación basada en código postal
-            // Esto es un fallback básico
             return res.json({
                 cost: config.shippingRates.minimumCost,
                 distance: 0,
-                message: 'No se pudo calcular la distancia exacta. Se aplicó costo mínimo.',
+                message: 'No se pudo calcular la distancia. Se aplicó costo mínimo.',
                 estimated: true
             });
         }
 
-        // Verificar distancia máxima
         if (config.settings.maxDeliveryRadius > 0 && distance > config.settings.maxDeliveryRadius) {
             return res.status(400).json({
                 msg: `La dirección está fuera del radio de entrega (máximo ${config.settings.maxDeliveryRadius} km)`,
@@ -211,7 +215,6 @@ export const calculateShippingCost = async (req, res) => {
             });
         }
 
-        // Verificar envío gratis por distancia
         if (config.shippingRates.freeShippingDistance > 0 && distance <= config.shippingRates.freeShippingDistance) {
             return res.json({
                 cost: 0,
@@ -221,10 +224,9 @@ export const calculateShippingCost = async (req, res) => {
             });
         }
 
-        // Calcular costo basado en distancia
+        // Esta lógica de costPerKm ya soporta tu idea de "precio por metro/km"
         let cost = distance * config.shippingRates.costPerKm;
         
-        // Aplicar costo mínimo y máximo
         cost = Math.max(cost, config.shippingRates.minimumCost);
         cost = Math.min(cost, config.shippingRates.maximumCost);
 
@@ -239,4 +241,3 @@ export const calculateShippingCost = async (req, res) => {
         res.status(500).json({ msg: 'Error al calcular costo de envío', error: error.message });
     }
 };
-

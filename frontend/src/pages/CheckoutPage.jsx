@@ -1,4 +1,5 @@
-//revisdo
+// frontend/src/pages/CheckoutPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart.js';
@@ -16,21 +17,19 @@ const CheckoutPage = () => {
     const { cart, itemCount, checkout, loading } = useCart(); 
     const navigate = useNavigate();
 
-    // --- INICIO CAMBIO ---
-    // 1. Añadimos estado para los datos del invitado
     const [customerInfo, setCustomerInfo] = useState({
         nombre: '',
         email: '',
         telefono: ''
     });
-    // --- FIN CAMBIO ---
 
+    // --- INICIO CAMBIO ---
+    // Simplificamos el estado, ya no necesitamos postalCode ni country
     const [shippingAddress, setShippingAddress] = useState({
         address: '',
-        city: '',
-        postalCode: '',
-        country: 'Argentina' // Valor por defecto
+        city: '', 
     });
+    // --- FIN CAMBIO ---
 
     const [paymentMethod, setPaymentMethod] = useState('MercadoPago');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -39,25 +38,28 @@ const CheckoutPage = () => {
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingMessage, setShippingMessage] = useState('');
 
-    // --- INICIO CAMBIO ---
-    // 2. Añadimos un manejador de cambio para los datos del invitado
     const onCustomerChange = (e) => {
         setCustomerInfo(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
-    // --- FIN CAMBIO ---
 
     const onChange = (e) => {
         setShippingAddress(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    // --- INICIO CAMBIO ---
+    // Actualizamos la validación, ya no miramos postalCode
     const calculateShipping = useCallback(async (address) => {
-        if (!address.address || !address.city || !address.postalCode) {
+        if (!address.address || !address.city) {
             return;
         }
+    // --- FIN CAMBIO ---
         
         setIsCalculatingShipping(true);
         try {
             const cartTotal = cart.items.reduce((total, item) => total + item.cantidad * item.precio, 0);
+            
+            // La función de servicio ya envía solo el objeto { address, city }
+            // El backend (que ya arreglamos) lo interpretará correctamente.
             const result = await calculateShippingCost(address, cartTotal);
             
             if (result.freeShipping) {
@@ -84,15 +86,18 @@ const CheckoutPage = () => {
         }
     }, [cart.items]);
 
+    // --- INICIO CAMBIO ---
+    // Actualizamos la validación, ya no miramos postalCode
     useEffect(() => {
-        if (shippingAddress.address && shippingAddress.city && shippingAddress.postalCode) {
+        if (shippingAddress.address && shippingAddress.city) {
             const timer = setTimeout(() => {
                 calculateShipping(shippingAddress);
             }, 500); // Debounce
             
             return () => clearTimeout(timer);
         }
-    }, [cart.items, shippingAddress, calculateShipping]);
+    }, [shippingAddress, calculateShipping]); // <-- quitamos cart.items
+    // --- FIN CAMBIO ---
 
     const handlePaymentMethodChange = (e) => {
         setPaymentMethod(e.target.value);
@@ -103,15 +108,14 @@ const CheckoutPage = () => {
         setIsProcessing(true);
         
         try {
-            // --- INICIO CAMBIO ---
-            // 3. Añadimos 'customerInfo' al objeto orderData que pasamos al checkout
+            // El objeto shippingAddress ahora solo tiene { address, city }
+            // El backend (order.model.js) ya está configurado para aceptarlo (los otros campos son opcionales)
             const orderData = {
-                customerInfo, // <-- AÑADIDO
+                customerInfo, 
                 shippingAddress,
                 paymentMethod: paymentMethod,
                 shippingCost: shippingCost
             };
-            // --- FIN CAMBIO ---
             
             const createdOrder = await checkout(orderData);
             toast.success('¡Orden creada con éxito!');
@@ -137,7 +141,8 @@ const CheckoutPage = () => {
             </div>
         );
     }
-
+    
+    // ... (Cálculos de total y formatos se mantienen igual) ...
     const cartSubtotal = cart.items.reduce((total, item) => total + item.cantidad * item.precio, 0);
     const total = cartSubtotal + shippingCost;
 
@@ -156,14 +161,14 @@ const CheckoutPage = () => {
         currency: "ARS",
     }).format(total);
 
+
     return (
         <div className={styles.pageContainer}>
             <h2>Finalizar Compra</h2>
             <div className={styles.checkoutGrid}>
                 <div className={styles.shippingForm}>
                     <form onSubmit={handlePlaceOrder} className={styles.form}>
-                        {/* --- INICIO CAMBIO --- */}
-                        {/* 4. Agregamos los inputs para los datos del invitado */}
+                        
                         <h3>Datos Personales</h3>
                         <Input 
                             label="Nombre Completo" 
@@ -183,17 +188,19 @@ const CheckoutPage = () => {
                             required 
                             placeholder="tu@email.com"
                         />
+                        {/* --- INICIO CAMBIO --- */}
                         <Input 
-                            label="Teléfono (Opcional)" 
+                            label="Teléfono" 
                             type="tel" 
                             name="telefono" 
                             value={customerInfo.telefono}
                             onChange={onCustomerChange} 
-                            placeholder="Ej: 1122334455"
+                            placeholder="Ej: 3624 123456"
+                            required // <-- AHORA ES OBLIGATORIO
                         />
+                        {/* --- FIN CAMBIO --- */}
                         
                         <h3 style={{marginTop: '1.5rem'}}>Información de Envío</h3>
-                        {/* --- FIN CAMBIO --- */}
                         
                         <Input 
                             label="Dirección" 
@@ -211,28 +218,13 @@ const CheckoutPage = () => {
                             value={shippingAddress.city}
                             onChange={onChange} 
                             required 
-                            placeholder="Ciudad"
+                            placeholder="Tu ciudad"
                         />
-                        <p>*Recordatorio: Sacar CP y País </p>
-                        <Input 
-                            label="Código Postal" 
-                            type="text" 
-                            name="postalCode" 
-                            value={shippingAddress.postalCode}
-                            onChange={onChange} 
-                            required 
-                            placeholder="CP"
-                        />
-                        <Input 
-                            label="País" 
-                            type="text" 
-                            name="country" 
-                            value={shippingAddress.country}
-                            onChange={onChange} 
-                            required 
-                            placeholder="País"
-                        />
-                        <p>*Recordatorio: Integrar API de Google Maps para calcular el costo atm</p>
+                        
+                        {/* --- INICIO CAMBIO --- */}
+                        {/* Eliminamos Postal Code y Country */}
+                        {/* --- FIN CAMBIO --- */}
+                        
                         {isCalculatingShipping && (
                             <p className={styles.aviso} style={{ color: '#007bff' }}>
                                 Calculando costo de envío...
@@ -245,6 +237,7 @@ const CheckoutPage = () => {
                             </p>
                         )}
                         
+                        {/* ... (Método de pago se mantiene igual) ... */}
                         <div className={styles.paymentMethodSection}>
                             <label htmlFor="paymentMethod" className={styles.selectLabel}>
                                 Método de Pago
@@ -267,6 +260,7 @@ const CheckoutPage = () => {
                             )}
                         </div>
 
+
                         <Button 
                             type="submit" 
                             variant='primary' 
@@ -277,6 +271,8 @@ const CheckoutPage = () => {
                         </Button>
                     </form>
                 </div>
+                
+                {/* ... (Resumen de la orden se mantiene igual) ... */}
                 <div className={styles.orderSummary}>
                     <h3>Resumen de la Orden</h3>
                     <div className={styles.summaryItemList}>
