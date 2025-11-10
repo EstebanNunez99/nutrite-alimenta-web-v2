@@ -1,20 +1,16 @@
+//revisado
 // src/services/orderService.js
 
 // 1. Importamos nuestro 'cerebro' centralizado de Axios
 import api from '../api/axios';
 
-/**
- * Obtiene las órdenes del usuario logueado.
- */
-export const getMyOrders = async (page = 1) => {
-    // Enviamos el número de página como un query parameter
-    const res = await api.get(`/orders/myorders?page=${page}`);
-    // El backend ahora devolverá { orders, page, totalPages }
-    return res.data;
-};
+// --- FUNCIONES ELIMINADAS ---
+// getMyOrders (Ya no existe el historial para clientes)
+// payOrder (El pago manual se reemplazó por webhooks)
+// ----------------------------
 
 /**
- * Obtiene una orden por su ID.
+ * Obtiene una orden por su ID (Público).
  */
 export const getOrderById = async (id) => {
     const res = await api.get(`/orders/${id}`);
@@ -22,15 +18,7 @@ export const getOrderById = async (id) => {
 };
 
 /**
- * Marca una orden como pagada.
- */
-export const payOrder = async (orderId) => {
-    const res = await api.put(`/orders/${orderId}/pay`);
-    return res.data;
-};
-
-/**
- * Crea una nueva orden.
+ * Crea una nueva orden (Público, para invitados).
  */
 export const createOrder = async (orderData) => {
     const response = await api.post('/orders', orderData);
@@ -38,13 +26,22 @@ export const createOrder = async (orderData) => {
 };
 
 /**
- * Crea una preferencia de pago de MercadoPago para una orden.
- * Esto devuelve la URL de pago a la que se debe redirigir al usuario.
+ * Crea una preferencia de pago de MercadoPago (Público).
  */
 export const createMercadoPagoPreference = async (orderId) => {
     const response = await api.post(`/orders/${orderId}/create-payment-preference`);
     return response.data;
 };
+
+/**
+ * Rastrea una orden por ID y Email (Público).
+ */
+export const trackOrder = async (orderId, email) => {
+    const { data } = await api.post('/orders/track', { orderId, email });
+    return data;
+};
+
+// --- FUNCIONES DE ADMIN ---
 
 /**
  * Obtener todas las órdenes (Admin)
@@ -77,20 +74,4 @@ export const updateDeliveryStatus = async (orderId, deliveryStatus) => {
 export const createManualOrder = async (orderData) => {
     const res = await api.post('/orders/manual', orderData);
     return res.data;
-};
-
-// ... (tus otras importaciones y 'createOrder')
-
-// --- AÑADE ESTA FUNCIÓN ---
-// Llama a la nueva ruta pública de seguimiento de órdenes
-export const trackOrder = async (orderId, email) => {
-    // Asumo que tu 'api' (cliente axios) está en ../api/axios.js
-    // Ajusta la ruta si es necesario.
-    try {
-        const { data } = await api.post('/api/orders/track', { orderId, email });
-        return data; // Devuelve la orden completa si la encuentra
-    } catch (error) {
-        // Relanzamos el error para que el componente lo maneje
-        throw error;
-    }
 };

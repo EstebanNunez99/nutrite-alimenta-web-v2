@@ -1,3 +1,4 @@
+//revisdo
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart.js';
@@ -212,6 +213,7 @@ const CheckoutPage = () => {
                             required 
                             placeholder="Ciudad"
                         />
+                        <p>*Recordatorio: Sacar CP y País </p>
                         <Input 
                             label="Código Postal" 
                             type="text" 
@@ -230,6 +232,7 @@ const CheckoutPage = () => {
                             required 
                             placeholder="País"
                         />
+                        <p>*Recordatorio: Integrar API de Google Maps para calcular el costo atm</p>
                         {isCalculatingShipping && (
                             <p className={styles.aviso} style={{ color: '#007bff' }}>
                                 Calculando costo de envío...

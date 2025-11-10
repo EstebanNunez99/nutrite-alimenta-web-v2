@@ -1,3 +1,4 @@
+//revisado
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -29,6 +30,7 @@ const AdminDashboardPage = () => {
                     </li>
                     <li>
                         <Link to="/admin/users" className={styles.navItem}>
+                            <p>*Recordatorio: Sacar este botón, ya no se usa</p>
                             <Button variant='primary'>Gestionar Usuarios</Button>
                         </Link>
                     </li>

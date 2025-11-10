@@ -1,5 +1,10 @@
 //authController.js
-import Usuario from '../models/Usuario.js'; // <-- CAMBIO AQUÍ (.js)
+
+// --- INICIO CAMBIO ---
+// Importamos el modelo de usuario para poder usarlo en la base de datos
+import Usuario from '../users/user.model.js';
+// --- FIN CAMBIO ---
+
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -8,6 +13,7 @@ export const loginUsuario = async (req, res) => {
 
     try {
         // 1. Verificar si el usuario existe
+        // Esta línea ahora funcionará porque 'Usuario' está definido
         const usuario = await Usuario.findOne({ email });
         if (!usuario) {
             return res.status(400).json({ msg: 'Credenciales inválidas.' });
@@ -57,7 +63,8 @@ export const loginUsuario = async (req, res) => {
 // (Esta función ahora solo devolverá otros Admins)
 export const obtenerTodosLosUsuarios = async (req, res) => {
     try {
-        const usuarios = await Usuario.find().select('-password'); // Trae todos los usuarios sin la contraseña
+        // Esta línea también funcionará ahora
+        const usuarios = await Usuario.find().select('-password'); 
         res.json(usuarios);
     } catch (error) {
         console.error(error);

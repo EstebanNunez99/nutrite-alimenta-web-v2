@@ -1,57 +1,33 @@
+//revisado
 // src/services/userService.js
 
 // 1. Importamos nuestro 'cerebro' centralizado de Axios
 import api from '../api/axios';
 
-// --- SERVICIOS DE USUARIO ---
+// --- SERVICIOS DE USUARIO (SOLO PERFIL DE ADMIN) ---
+
+// --- CAMBIO: FUNCIONES ELIMINADAS (Código Muerto) ---
+// ya que no hay gestión de usuarios, solo el perfil del propio admin
+// export const getAllUsers = ...
+// export const getUserById = ...
+// export const updateUserRole = ...
+// export const deleteUser = ...
+// --- FIN CAMBIO ---
 
 /**
- * Obtiene todos los usuarios, con paginación y búsqueda.
- */
-export const getAllUsers = async (page = 1, search = '') => {
-    const response = await api.get(`/users?page=${page}&search=${search}`);
-    return response.data;
-};
-
-/**
- * Obtiene los datos de un usuario por su ID.
- */
-export const getUserById = async (id) => {
-    const response = await api.get(`/users/${id}`);
-    return response.data;
-};
-
-/**
- * Actualiza el perfil del usuario logueado (nombre, email).
+ * Actualiza el perfil del usuario logueado (Admin).
+ * Llama a: PUT /api/users/profile
  */
 export const updateUserProfile = async (userData) => {
     const response = await api.put('/users/profile', userData);
-    // Ya no necesitamos actualizar localStorage aquí, es mejor centralizar esa lógica en el AuthContext si es necesario
     return response.data;
 };
 
 /**
- * Actualiza la contraseña del usuario logueado.
+ * Actualiza la contraseña del usuario logueado (Admin).
+ * Llama a: PUT /api/users/profile/password
  */
 export const updateUserPassword = async (passwordData) => {
     const response = await api.put('/users/profile/password', passwordData);
-    return response.data;
-};
-
-// --- FUNCIONES PARA EL PANEL DE ADMIN ---
-
-/**
- * Actualiza el rol de un usuario específico.
- */
-export const updateUserRole = async (userId, roleData) => {
-    const response = await api.put(`/users/role/${userId}`, roleData);
-    return response.data;
-};
-
-/**
- * Elimina un usuario por su ID.
- */
-export const deleteUser = async (userId) => {
-    const response = await api.delete(`/users/${userId}`);
     return response.data;
 };

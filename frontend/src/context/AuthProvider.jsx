@@ -1,3 +1,6 @@
+//revisado
+// frontend/src/context/AuthProvider.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios'; 
 import { AuthContext } from './AuthContext.js';
@@ -16,13 +19,20 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            // El interceptor ya sabe del token, solo necesitamos pedir el perfil.
-            api.get('/users/profile')
+            // El interceptor ya sabe del token.
+            // Esta ruta '/users/profile' es CORRECTA, la verificamos en user.routes.js
+            api.get('/users/profile') 
                 .then(res => {
-                    setUsuario(res.data);
-                    setIsAuthenticated(true);
+                    // Verificamos que el usuario del token sea admin
+                    if (res.data.rol === 'admin') {
+                        setUsuario(res.data);
+                        setIsAuthenticated(true);
+                    } else {
+                        // Si es un token de un 'cliente' (quizás de una versión vieja), lo sacamos
+                        logout();
+                    }
                 })
-                .catch(() => logout()) // Si el token es inválido, el backend dará error y cerramos sesión.
+                .catch(() => logout()) // Si el token es inválido, cerramos sesión.
                 .finally(() => setCargando(false));
         } else {
             setCargando(false);
@@ -30,20 +40,25 @@ const AuthProvider = ({ children }) => {
     }, [logout]);
 
     const login = async (email, password) => {
-        const res = await api.post('/users/login', { email, password });
+        // --- CAMBIO CRÍTICO ---
+        // La ruta correcta de login que verificamos en el backend es /auth/login
+        const res = await api.post('/auth/login', { email, password });
+        // --- FIN CAMBIO ---
+
         localStorage.setItem('token', res.data.token);
-        const perfilRes = await api.get('/users/profile');
-        setUsuario(perfilRes.data);
+        
+        // --- CAMBIO (Optimización) ---
+        // La respuesta de /auth/login ya incluye el objeto 'usuario'
+        // No necesitamos hacer una segunda llamada a /users/profile
+        setUsuario(res.data.usuario);
         setIsAuthenticated(true);
+        // --- FIN CAMBIO ---
     };
 
-    const registro = async (nombre, email, password) => {
-        const res = await api.post('/users/register', { nombre, email, password });
-        localStorage.setItem('token', res.data.token);
-        const perfilRes = await api.get('/users/profile');
-        setUsuario(perfilRes.data);
-        setIsAuthenticated(true);
-    };
+    // --- CAMBIO CRÍTICO ---
+    // Eliminamos la función de registro
+    // const registro = async (nombre, email, password) => { ... };
+    // --- FIN CAMBIO ---
 
     const updateUserContext = (newUserData) => {
         setUsuario(prevUsuario => ({ ...prevUsuario, ...newUserData }));
@@ -51,8 +66,13 @@ const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{
-            isAuthenticated, usuario, cargando,
-            login, registro, logout, updateUserContext
+            isAuthenticated, 
+            usuario, 
+            cargando,
+            login, 
+            // registro, // <-- Eliminado
+            logout, 
+            updateUserContext
         }}>
             {!cargando && children}
         </AuthContext.Provider>

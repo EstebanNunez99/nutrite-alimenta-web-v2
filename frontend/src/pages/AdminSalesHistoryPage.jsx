@@ -1,3 +1,4 @@
+//revisado
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -236,11 +237,14 @@ const AdminSalesHistoryPage = () => {
                                                 {order._id.substring(0, 8)}...
                                             </button>
                                         </td>
+                                        {/* --- CAMBIO CRÍTICO --- */}
+                                        {/* Usamos customerInfo en lugar de usuario */}
                                         <td>
-                                            {order.usuario?.nombre || 'N/A'}
+                                            {order.customerInfo?.nombre || 'N/A'}
                                             <br />
-                                            <small>{order.usuario?.email || ''}</small>
+                                            <small>{order.customerInfo?.email || ''}</small>
                                         </td>
+                                        {/* --- FIN CAMBIO --- */}
                                         <td>{formatDate(order.createdAt)}</td>
                                         <td>
                                             {order.items.length} item(s)
@@ -313,4 +317,3 @@ const AdminSalesHistoryPage = () => {
 };
 
 export default AdminSalesHistoryPage;
-

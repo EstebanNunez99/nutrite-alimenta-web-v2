@@ -1,3 +1,4 @@
+//revisado
 import Product from './product.model.js';
 
 // @desc    Crear un nuevo producto

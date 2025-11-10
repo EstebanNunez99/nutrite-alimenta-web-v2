@@ -1,3 +1,4 @@
+//verificado
 // src/components/layout/Footer.jsx
 import React from "react";
 import { Link } from "react-router-dom";
@@ -21,7 +22,11 @@ const Footer = () => {
           <ul className={styles.navList}>
             <li><Link to="/">Inicio</Link></li>
             <li><Link to="/productos">Catálogo</Link></li>
-            <li><Link to="/perfil">Mi Perfil</Link></li>
+            {/* --- INICIO CAMBIO --- */}
+            {/* Eliminamos "Mi Perfil" y agregamos enlaces públicos */}
+            <li><Link to="/seguimiento">Seguimiento</Link></li>
+            <li><Link to="/auth">Admin</Link></li>
+            {/* --- FIN CAMBIO --- */}
           </ul>
         </div>
 

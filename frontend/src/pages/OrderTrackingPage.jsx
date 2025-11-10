@@ -1,3 +1,4 @@
+//revisado
 // frontend/src/pages/OrderTrackingPage.jsx
 
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Spinner from '../components/ui/Spinner';
 // Usaremos un estilo similar al de Checkout o Auth
-import styles from './styles/AuthPage.module.css'; 
+import styles from './styles/CheckoutPage.module.css'; 
 
 const OrderTrackingPage = () => {
     useDocumentTitle('Seguimiento de Orden');

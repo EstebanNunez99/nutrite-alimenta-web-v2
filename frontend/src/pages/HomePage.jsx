@@ -1,11 +1,16 @@
+//verificado
+// frontend/src/pages/HomePage.jsx
+
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 
-// Importamos las TRES posibles páginas de inicio
+// --- CAMBIO ---
+// Importamos solo las DOS posibles páginas de inicio
 import AdminHomePage from './AdminHomePage';
-import ClientHomePage from './ClientHomePage';
+// import ClientHomePage from './ClientHomePage'; // <-- Eliminado
 import GuestHomePage from './GuestHomePage';
 import  Spinner  from '../components/ui/Spinner'
+// --- FIN CAMBIO ---
 
 const HomePage = () => {
     const { usuario, cargando } = useAuth();
@@ -14,17 +19,20 @@ const HomePage = () => {
         return <Spinner />;
     }
 
-    // Lógica de despacho de tres vías
+    // --- CAMBIO ---
+    // Lógica de despacho de dos vías (Admin o Invitado)
     if (usuario?.rol === 'admin') {
         return <AdminHomePage />;
     }
     
-    if (usuario?.rol === 'cliente') {
-        return <ClientHomePage />;
-    }
+    // Eliminamos la lógica para 'cliente'
+    // if (usuario?.rol === 'cliente') {
+    //     return <ClientHomePage />;
+    // }
     
-    // Si no es admin ni cliente, entonces es un invitado
+    // Si no es admin, es un invitado
     return <GuestHomePage />;
+    // --- FIN CAMBIO ---
 };
 
 export default HomePage;

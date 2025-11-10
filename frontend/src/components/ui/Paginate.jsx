@@ -1,3 +1,4 @@
+//revisado
 import React from 'react';
 import Button from './Button'; // <-- 1. IMPORTA NUESTRO BOTÓN
 import styles from './Paginate.module.css'; // <-- Importa sus propios estilos

@@ -1,3 +1,4 @@
+//revisado
 export const adminMiddleware = (req, res, next) => {
     // Verificar que el usuario esté autenticado (req.usuario debería estar disponible por authMiddleware)
     if (req.usuario && req.usuario.rol === 'admin') {

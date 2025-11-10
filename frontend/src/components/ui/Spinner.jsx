@@ -1,3 +1,4 @@
+//revisado
 import React from 'react';
 
 // Estilos en formato de objeto JavaScript (CSS-in-JS)
@@ -20,7 +21,7 @@ const keyframes = `
 
 const spinnerStyles = {
     border: '8px solid #f3f3f3', // El círculo gris claro
-    borderTop: '8px solid #3498db', // El trozo azul que gira
+    borderTop: '8px solid #99654d', // El trozo azul que gira
     borderRadius: '50%',
     width: '60px',
     height: '60px',

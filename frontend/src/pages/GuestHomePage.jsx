@@ -1,4 +1,5 @@
-// GuestHomePage.jsx
+//verificado
+// frontend/src/pages/GuestHomePage.jsx
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -38,9 +39,7 @@ const GuestHomePage = () => {
         fetchProducts();
     }, []);
 
-    // Mostrar los primeros 7 productos en el carrusel
     const carouselProducts = products.length > 0 ? products.slice(0, Math.min(7, products.length)) : [];
-    // El producto destacado es el 8vo o el último si hay menos de 8
     const spotlightProduct = products.length > 7 ? products[7] : (products.length > 0 ? products[products.length - 1] : null);
 
     return (
@@ -53,9 +52,9 @@ const GuestHomePage = () => {
                         <Link to="/productos">
                             <Button variant='primary'>Explorar Catálogo</Button>
                         </Link>
-                        <Link to="/auth">
-                            <Button variant='secondary'>Iniciar Sesión / Registrarse</Button>
-                        </Link>
+                        {/* --- CAMBIO --- */}
+                        {/* Eliminamos el botón de Iniciar Sesión / Registrarse */}
+                        {/* --- FIN CAMBIO --- */}
                     </div>
                 </div>
             </section>

@@ -1,69 +1,63 @@
+//verificado
+// frontend/src/components/layout/Header.jsx
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify"; // <-- Eliminado (ya no se usa)
 import Button from "../ui/Button";
 import styles from "./Header.module.css";
 
-// Sub-componente con los enlaces de navegación
+// --- CAMBIO: Lógica de NavLinks completamente refactorizada ---
 const NavLinks = ({ onLinkClick }) => {
   const { isAuthenticated, usuario } = useAuth();
   const { itemCount, openCart } = useCart();
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // <-- Eliminado (ya no se usa)
 
-  const handlePrivateLinkClick = (e, path) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
-      toast.info("Debes iniciar sesión para acceder.");
-      navigate("/auth");
-    } else {
-      navigate(path);
-    }
-    if (onLinkClick) onLinkClick();
-  };
+  // Eliminada la función 'handlePrivateLinkClick'
 
+  // La lógica del carrito ahora es pública
   const handleCartClick = (e) => {
     e.preventDefault();
-    if (isAuthenticated) {
-      openCart();
-    } else {
-      toast.info("Debes iniciar sesión para ver tu carrito.");
-      navigate("/auth");
-    }
+    openCart();
     if (onLinkClick) onLinkClick();
   };
 
   return (
     <>
-      {usuario?.rol !== "admin" && (
+      {isAuthenticated && usuario.rol === "admin" ? (
+        // --- VISTA DE ADMIN ---
+        <>
+          <Button to="/admin" variant="primary" onClick={onLinkClick}>
+            Panel Admin
+          </Button>
+          <Button to="/perfil" variant="link" onClick={onLinkClick}>
+            Mi Perfil
+          </Button>
+          {/* El admin no ve el carrito ni el catálogo general */}
+        </>
+      ) : (
+        // --- VISTA DE INVITADO ---
         <>
           <Button to="/" variant="link" onClick={onLinkClick}>Inicio</Button>
           <Button to="/productos" variant="link" onClick={onLinkClick}>Catálogo</Button>
-        </>
-      )}
-      <Button to="/perfil" variant="link" onClick={(e) => handlePrivateLinkClick(e, "/perfil")}>
-        Mi Perfil
-      </Button>
-      {usuario?.rol !== "admin" && (
-        <>
-          <Button to="/mis-pedidos" variant="link" onClick={(e) => handlePrivateLinkClick(e, "/mis-pedidos")}>
-            Mis Pedidos
+          
+          {/* Reemplazamos "Mis Pedidos" por "Seguimiento" */}
+          <Button to="/seguimiento" variant="link" onClick={onLinkClick}>
+            Seguimiento
           </Button>
+          
           <Button variant="link" onClick={handleCartClick}>
             Carrito ({itemCount})
           </Button>
         </>
       )}
-      {isAuthenticated && usuario.rol === "admin" && (
-        <Button to="/admin" variant="primary" onClick={onLinkClick}>
-          Panel Admin
-        </Button>
-      )}
     </>
   );
 };
+// --- FIN CAMBIO ---
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -78,7 +72,6 @@ const Header = () => {
     return () => (document.body.style.overflow = "auto");
   }, [isMenuOpen]);
 
-  // Efecto para agregar una sombra o fondo distinto al hacer scroll
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);

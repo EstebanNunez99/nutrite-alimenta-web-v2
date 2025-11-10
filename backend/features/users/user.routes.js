@@ -1,10 +1,13 @@
+//verificado
 import express from 'express';
-import { authMiddleware, adminMiddleware } from '../../shared/middlewares/auth.middleware.js';
+import { authMiddleware } from '../../shared/middlewares/auth.middleware.js'; // Solo necesitamos authMiddleware
+// import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js'; // No es necesario si solo el admin accede
+
 import { 
-    register, 
-    login, 
+    // register, // Eliminada
+    // login, // Eliminada
     getProfile, 
-    getAllUsers,
+    // getAllUsers, // Eliminada
     updateUserProfile,
     updateUserPassword
 } from './user.controller.js';
@@ -12,15 +15,19 @@ import {
 const router = express.Router();
 
 // --- Rutas Públicas ---
-router.post('/register', register);
-router.post('/login', login);
+// router.post('/register', register); // Eliminada
+// router.post('/login', login); // Eliminada
 
 // --- Rutas para Usuarios Autenticados ---
-router.get('/profile', authMiddleware, getProfile);
-router.get('/', authMiddleware, adminMiddleware, getAllUsers);
+// (Estas rutas ahora solo serán para el Admin logueado)
 
-//rutas privadas para cambair usario y contraseña
-router.put('/profile', authMiddleware, updateUserProfile);
-router.put('/profile/password', authMiddleware, updateUserPassword);
+// router.get('/', authMiddleware, adminMiddleware, getAllUsers); // Eliminada (ya está en auth.routes.js)
+
+// Aplicamos el middleware a todas las rutas de perfil
+router.use(authMiddleware);
+
+router.get('/profile', getProfile);
+router.put('/profile', updateUserProfile);
+router.put('/profile/password', updateUserPassword);
 
 export default router;

@@ -1,15 +1,16 @@
+//revisado
 // --- SDK de MercadoPago ---
 import { MercadoPagoConfig, Preference, Payment, MerchantOrder } from 'mercadopago';
 
 import mongoose from 'mongoose';
 import Order from './order.model.js';
 // --- CAMBIO ---
-// import Cart from '../cart/cart.model.js'; // Ya no usamos el carrito de la BD
+// import Cart from '../cart/cart.model.js'; // Eliminado, ya no usamos el carrito de la BD
 // --- FIN CAMBIO ---
 import Product from '../products/product.model.js'; 
 
 // --- CAMBIO ---
-// @desc    Crear una nueva orden (con lógica de stock)
+// @desc    Crear una nueva orden (para invitados)
 // @route   POST /api/orders
 // @access  Public (Antes: Private)
 export const createOrder = async (req, res) => {
@@ -43,6 +44,7 @@ export const createOrder = async (req, res) => {
 
         // Iteramos sobre los items del body para verificar stock y obtener precios de la BD
         for (const item of items) {
+            // El 'producto' aquí es el ID
             const product = await Product.findById(item.producto).session(session);
 
             if (!product) {
@@ -117,8 +119,6 @@ export const createOrder = async (req, res) => {
 
 // --- CAMBIO ---
 // @desc    Obtener las órdenes paginadas del usuario logueado
-// @route   GET /api/orders/myorders
-// @access  Private
 // --- ESTA FUNCIÓN FUE ELIMINADA ---
 // export const getMyOrders = ...
 // --- FIN CAMBIO ---
@@ -134,8 +134,6 @@ export const getOrderById = async (req, res) => {
         
         if (order) {
             // Se elimina el chequeo de propiedad de la orden
-            // (if (order.usuario._id.toString() !== req.usuario.id && ...))
-            // Ahora la ruta es pública para el flujo de guest checkout
             res.json(order);
         } else {
             res.status(404).json({ msg: 'Orden no encontrada.' });
@@ -148,8 +146,6 @@ export const getOrderById = async (req, res) => {
 
 // --- CAMBIO ---
 // @desc    Actualizar una orden a 'pagada' (Webhook reemplazará esto)
-// @route   PUT /api/orders/:id/pay
-// @access  Private
 // --- ESTA FUNCIÓN FUE ELIMINADA (Flujo obsoleto) ---
 // export const updateOrderToPaid = ...
 // --- FIN CAMBIO ---
@@ -240,8 +236,7 @@ export const createMercadoPagoPreference = async (req, res) => {
             init_point: result.init_point 
         });
 
-    } catch (error)
- {
+    } catch (error) {
         console.error('Error al crear preferencia de MercadoPago:', error);
         if (error.response && error.response.data) {
             console.error('Detalle del error de MP:', error.response.data);
@@ -263,7 +258,6 @@ export const createMercadoPagoPreference = async (req, res) => {
 // @access  Público
 // --- ESTA FUNCIÓN NO NECESITA CAMBIOS ---
 export const receiveMercadoPagoWebhook = async (req, res) => {
-    // ... (Tu lógica existente está perfecta, ya se basa en orderId)
     console.log('[MP Webhook] Notificación recibida.');
     console.log('Body:', JSON.stringify(req.body, null, 2));
     
@@ -388,6 +382,7 @@ export const receiveMercadoPagoWebhook = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor al procesar webhook', error: error.message });
     }
 };
+// --- FIN CAMBIO (Función sin cambios) ---
 
 
 // --- CAMBIO ---
@@ -470,7 +465,7 @@ export const updateDeliveryStatus = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
     }
 };
-
+// --- FIN CAMBIO (Función sin cambios) ---
 // --- CAMBIO ---
 // @desc    Crear orden manual (Admin)
 // @route   POST /api/orders/manual
@@ -505,9 +500,9 @@ export const createManualOrder = async (req, res) => {
                 throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${stockDisponible} unidades disponibles.`);
             }
 
-            // Usamos el precio de la BD
-            const priceFromDB = product.precio;
-            calculatedSubtotal += item.cantidad * priceFromDB;
+            // Usamos el precio de la BD (o el precio dado, en admin manual se puede confiar)
+            const price = item.precio || product.precio;
+            calculatedSubtotal += item.cantidad * price;
 
             productsToUpdate.push({
                 updateOne: {
@@ -561,10 +556,13 @@ export const createManualOrder = async (req, res) => {
         const createdOrder = await order.save({ session });
         await session.commitTransaction();
 
-        // const populatedOrder = await Order.findById(createdOrder._id).populate('usuario', 'nombre email'); // <-- Eliminado
-        res.status(201).json(createdOrder); // Devolvemos la orden sin popular
+        // --- INICIO CORRECCIÓN ---
+        // El código de estado 21 no es válido, debe ser 201
+        res.status(201).json(createdOrder); // <-- CORREGIDO DE 21 A 201
+        // --- FIN CORRECCIÓN ---
 
     } catch (error) {
+        // Este abortTransaction solo se ejecutará si el commit AÚN NO se hizo
         await session.abortTransaction();
         console.error(error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
@@ -646,7 +644,7 @@ export const triggerOrderCleanup = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor durante la limpieza de órdenes.' });
     }
 };
-// --- FIN CAMBIO ---
+// --- FIN CAMBIO (Función sin cambios) ---
 
 // --- CAMBIO ---
 // @desc    Obtener una orden por ID y Email (para invitados)

@@ -1,3 +1,4 @@
+//verificado
 import mongoose from 'mongoose';
 
 const shippingConfigSchema = new mongoose.Schema({

@@ -1,3 +1,4 @@
+//verificado
 import { useEffect, useRef } from 'react';
 
 function useDocumentTitle(title, prevailOnUnmount = false) {

@@ -1,7 +1,8 @@
-// backend/routes/auth.js
+//revisado
+// backend/routes/auth.js 
 import express from 'express'
-import { loginUsuario, obtenerTodosLosUsuarios } from '../controllers/authController.js';
-import authMiddleware, { adminMiddleware } from '../middleware/authMiddleware.js';
+import { loginUsuario, obtenerTodosLosUsuarios } from './auth.controller.js';
+import { authMiddleware,  adminMiddleware } from '../../shared/middlewares/auth.middleware.js'; 
 
 const router = express.Router();
 

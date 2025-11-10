@@ -1,10 +1,15 @@
+//verificado
+// frontend/src/pages/AdminCreateManualOrderPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getAllUsers } from '../services/userService';
+// --- CAMBIO ---
+// import { getAllUsers } from '../services/userService'; // Eliminado
 import { getAllProducts } from '../services/productService';
 import { createManualOrder } from '../services/orderService';
 import { calculateShippingCost } from '../services/shippingService';
+// --- FIN CAMBIO ---
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Spinner from '../components/ui/Spinner';
@@ -17,13 +22,22 @@ const AdminCreateManualOrderPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [users, setUsers] = useState([]);
+    // --- CAMBIO ---
+    // const [users, setUsers] = useState([]); // Eliminado
     const [products, setProducts] = useState([]);
-    const [searchUser, setSearchUser] = useState('');
+    // const [searchUser, setSearchUser] = useState(''); // Eliminado
     const [searchProduct, setSearchProduct] = useState('');
+    // --- FIN CAMBIO ---
 
     const [orderData, setOrderData] = useState({
-        usuarioId: '',
+        // --- CAMBIO ---
+        // usuarioId: '', // Eliminado
+        customerInfo: { // Añadido
+            nombre: '',
+            email: '',
+            telefono: ''
+        },
+        // --- FIN CAMBIO ---
         items: [],
         shippingAddress: {
             address: '',
@@ -44,21 +58,35 @@ const AdminCreateManualOrderPage = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [usersData, productsData] = await Promise.all([
-                getAllUsers(1, ''),
-                getAllProducts(1, '', '', '')
-            ]);
-            setUsers(usersData.users || []);
+            // --- CAMBIO ---
+            // Ya no cargamos usuarios
+            const productsData = await getAllProducts(1, '', '', '');
+            // setUsers(usersData.users || []); // Eliminado
             setProducts(productsData.products || []);
+            // --- FIN CAMBIO ---
         } catch (error) {
             console.error('Error al cargar datos:', error);
-            toast.error('Error al cargar usuarios y productos');
+            toast.error('Error al cargar productos');
         } finally {
             setLoading(false);
         }
     };
+    
+    // --- CAMBIO ---
+    // Añadido nuevo handler para los inputs del cliente
+    const handleCustomerChange = (field, value) => {
+        setOrderData(prev => ({
+            ...prev,
+            customerInfo: {
+                ...prev.customerInfo,
+                [field]: value
+            }
+        }));
+    };
+    // --- FIN CAMBIO ---
 
     const handleAddProduct = (product) => {
+        // ... (Tu lógica para añadir productos está bien y no necesita cambios)
         const existingItem = orderData.items.find(item => item.producto === product._id);
         if (existingItem) {
             setOrderData(prev => ({
@@ -88,6 +116,7 @@ const AdminCreateManualOrderPage = () => {
     };
 
     const handleRemoveItem = (productId) => {
+        // ... (Tu lógica está bien)
         setOrderData(prev => ({
             ...prev,
             items: prev.items.filter(item => item.producto !== productId)
@@ -95,6 +124,7 @@ const AdminCreateManualOrderPage = () => {
     };
 
     const handleUpdateQuantity = (productId, quantity) => {
+        // ... (Tu lógica está bien)
         if (quantity < 1) {
             handleRemoveItem(productId);
             return;
@@ -110,10 +140,10 @@ const AdminCreateManualOrderPage = () => {
     };
 
     const handleAddressChange = async (field, value) => {
+        // ... (Tu lógica está bien)
         const newAddress = { ...orderData.shippingAddress, [field]: value };
         setOrderData(prev => ({ ...prev, shippingAddress: newAddress }));
 
-        // Calcular envío cuando se complete la dirección
         if (newAddress.address && newAddress.city && newAddress.postalCode) {
             try {
                 const subtotal = orderData.items.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
@@ -139,10 +169,13 @@ const AdminCreateManualOrderPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!orderData.usuarioId) {
-            toast.error('Debe seleccionar un usuario');
+        // --- CAMBIO ---
+        // Validamos el customerInfo en lugar del usuarioId
+        if (!orderData.customerInfo.nombre || !orderData.customerInfo.email) {
+            toast.error('Debe completar el nombre y email del cliente');
             return;
         }
+        // --- FIN CAMBIO ---
         
         if (orderData.items.length === 0) {
             toast.error('Debe agregar al menos un producto');
@@ -151,6 +184,7 @@ const AdminCreateManualOrderPage = () => {
 
         setSaving(true);
         try {
+            // El 'orderData' ahora contiene 'customerInfo' y la API lo aceptará
             const createdOrder = await createManualOrder(orderData);
             toast.success('Venta creada exitosamente');
             navigate(`/orden/${createdOrder._id}`);
@@ -162,10 +196,9 @@ const AdminCreateManualOrderPage = () => {
         }
     };
 
-    const filteredUsers = users.filter(user =>
-        user.nombre.toLowerCase().includes(searchUser.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchUser.toLowerCase())
-    );
+    // --- CAMBIO ---
+    // Eliminada la variable 'filteredUsers'
+    // --- FIN CAMBIO ---
 
     const filteredProducts = products.filter(product =>
         product.nombre.toLowerCase().includes(searchProduct.toLowerCase())
@@ -180,44 +213,38 @@ const AdminCreateManualOrderPage = () => {
             <h2>Crear Venta Manual</h2>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-                {/* Selección de Usuario */}
+                
+                {/* --- CAMBIO --- */}
+                {/* Sección de Cliente Reemplazada */}
                 <div className={styles.section}>
-                    <h3>Cliente</h3>
+                    <h3>Datos del Cliente</h3>
                     <Input
-                        label="Buscar Usuario"
+                        label="Nombre Completo"
                         type="text"
-                        value={searchUser}
-                        onChange={(e) => setSearchUser(e.target.value)}
-                        placeholder="Buscar por nombre o email..."
+                        value={orderData.customerInfo.nombre}
+                        onChange={(e) => handleCustomerChange('nombre', e.target.value)}
+                        placeholder="Nombre y Apellido"
+                        required
                     />
-                    {searchUser && (
-                        <div className={styles.dropdown}>
-                            {filteredUsers.length > 0 ? (
-                                filteredUsers.map(user => (
-                                    <div
-                                        key={user._id}
-                                        className={styles.dropdownItem}
-                                        onClick={() => {
-                                            setOrderData(prev => ({ ...prev, usuarioId: user._id }));
-                                            setSearchUser(user.nombre);
-                                        }}
-                                    >
-                                        {user.nombre} ({user.email})
-                                    </div>
-                                ))
-                            ) : (
-                                <div className={styles.dropdownItem}>No se encontraron usuarios</div>
-                            )}
-                        </div>
-                    )}
-                    {orderData.usuarioId && (
-                        <p className={styles.selected}>
-                            Usuario seleccionado: {users.find(u => u._id === orderData.usuarioId)?.nombre}
-                        </p>
-                    )}
+                    <Input
+                        label="Email"
+                        type="email"
+                        value={orderData.customerInfo.email}
+                        onChange={(e) => handleCustomerChange('email', e.target.value)}
+                        placeholder="email@cliente.com"
+                        required
+                    />
+                    <Input
+                        label="Teléfono (Opcional)"
+                        type="tel"
+                        value={orderData.customerInfo.telefono}
+                        onChange={(e) => handleCustomerChange('telefono', e.target.value)}
+                    />
                 </div>
+                {/* --- FIN CAMBIO --- */}
 
-                {/* Agregar Productos */}
+
+                {/* Agregar Productos (Esta sección está bien) */}
                 <div className={styles.section}>
                     <h3>Productos</h3>
                     <Input
@@ -244,46 +271,41 @@ const AdminCreateManualOrderPage = () => {
                             )}
                         </div>
                     )}
-
-                    {/* Lista de productos agregados */}
                     {orderData.items.length > 0 && (
                         <div className={styles.itemsList}>
                             <h4>Productos en la orden:</h4>
-                            {orderData.items.map(item => {
-                                const product = products.find(p => p._id === item.producto);
-                                return (
-                                    <div key={item.producto} className={styles.itemRow}>
-                                        <div className={styles.itemInfo}>
-                                            <span>{item.nombre}</span>
-                                            <span>${item.precio} c/u</span>
-                                        </div>
-                                        <div className={styles.itemActions}>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                value={item.cantidad}
-                                                onChange={(e) => handleUpdateQuantity(item.producto, parseInt(e.target.value) || 1)}
-                                                style={{ width: '80px' }}
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="secondary"
-                                                onClick={() => handleRemoveItem(item.producto)}
-                                            >
-                                                Eliminar
-                                            </Button>
-                                        </div>
-                                        <div className={styles.itemTotal}>
-                                            ${(item.precio * item.cantidad).toFixed(2)}
-                                        </div>
+                            {orderData.items.map(item => (
+                                <div key={item.producto} className={styles.itemRow}>
+                                    <div className={styles.itemInfo}>
+                                        <span>{item.nombre}</span>
+                                        <span>${item.precio} c/u</span>
                                     </div>
-                                );
-                            })}
+                                    <div className={styles.itemActions}>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            value={item.cantidad}
+                                            onChange={(e) => handleUpdateQuantity(item.producto, parseInt(e.target.value) || 1)}
+                                            style={{ width: '80px' }}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={() => handleRemoveItem(item.producto)}
+                                        >
+                                            Eliminar
+                                        </Button>
+                                    </div>
+                                    <div className={styles.itemTotal}>
+                                        ${(item.precio * item.cantidad).toFixed(2)}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* Dirección de Envío */}
+                {/* Dirección de Envío (Esta sección está bien) */}
                 <div className={styles.section}>
                     <h3>Dirección de Envío</h3>
                     <Input
@@ -300,6 +322,7 @@ const AdminCreateManualOrderPage = () => {
                         onChange={(e) => handleAddressChange('city', e.target.value)}
                         required
                     />
+                    <p>*Recordatorio de mejora: Sacar código postal? y país</p>
                     <Input
                         label="Código Postal"
                         type="text"
@@ -316,7 +339,7 @@ const AdminCreateManualOrderPage = () => {
                     />
                 </div>
 
-                {/* Método de Pago y Estados */}
+                {/* Método de Pago y Estados (Esta sección está bien) */}
                 <div className={styles.section}>
                     <h3>Configuración</h3>
                     <div>
@@ -357,7 +380,7 @@ const AdminCreateManualOrderPage = () => {
                     </div>
                 </div>
 
-                {/* Resumen */}
+                {/* Resumen (Esta sección está bien) */}
                 <div className={styles.section}>
                     <h3>Resumen</h3>
                     <div className={styles.summary}>
@@ -394,4 +417,3 @@ const AdminCreateManualOrderPage = () => {
 };
 
 export default AdminCreateManualOrderPage;
-

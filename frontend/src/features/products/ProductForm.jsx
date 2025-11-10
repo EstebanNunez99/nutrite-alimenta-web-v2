@@ -1,3 +1,4 @@
+//verificado
 // ProductForm.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -59,11 +60,13 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             </div>
 
             <div className={styles.formGroup}>
+                 <p>*Recordatorio de mejora: Poder seleccionar la categoria desde una lista desplegable, sin necesidad de escribir (añadir categorías a la lista manualmente con un boton de +)</p>
                 <label htmlFor="categoria" className={styles.formLabel}>Categoría</label>
                 <Input id="categoria" type="text" name="categoria" value={formData.categoria} onChange={onChange} className={styles.formInput} />
             </div>
 
             <div className={styles.formGroup}>
+                <p>*Recordatorio de mejora: Poder cargar la imagen directamtente y no la URL </p>
                 <label htmlFor="imagen" className={styles.formLabel}>URL de la Imagen</label>
                 <Input id="imagen" type="text" name="imagen" value={formData.imagen} onChange={onChange} className={styles.formInput} />
             </div>

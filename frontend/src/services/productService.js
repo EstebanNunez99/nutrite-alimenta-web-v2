@@ -1,3 +1,4 @@
+//verificado
 // src/services/productService.js
 
 // 1. Importamos nuestro 'cerebro' centralizado de Axios

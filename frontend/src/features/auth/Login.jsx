@@ -1,3 +1,4 @@
+//verificado
 // Ubicación: web/src/features/auth/Login.jsx
 
 import React, { useState } from 'react';
@@ -10,7 +11,10 @@ import styles from './AuthForm.module.css';
 // 1. Importamos los íconos que vamos a usar
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 
-const Login = ({ onSwitchToRegister }) => {
+// --- CAMBIO ---
+// Eliminamos la prop 'onSwitchToRegister'
+const Login = () => {
+// --- FIN CAMBIO ---
     const { login } = useAuth();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const { email, password } = formData;
@@ -21,6 +25,8 @@ const Login = ({ onSwitchToRegister }) => {
         e.preventDefault();
         try {
             await login(email, password);
+            // Opcional: un toast de bienvenida
+            toast.success('¡Bienvenido!');
         } catch (error) {
             console.error(error.response ? error.response.data : error.message);
             toast.error(`Error: ${error.response ? error.response.data.msg : 'Credenciales inválidas'}`);
@@ -29,10 +35,11 @@ const Login = ({ onSwitchToRegister }) => {
 
      return (
         <div className={styles.formContainer}>
-            <h2>Iniciar Sesión</h2>
+            {/* --- CAMBIO --- */}
+            <h2>Login de Administrador</h2>
+            {/* --- FIN CAMBIO --- */}
             <form onSubmit={onSubmit} className={styles.form}>
                 
-                {/* MÁS SIMPLE: Ahora solo pasamos el ícono como prop */}
                 <Input
                     icon={<FaEnvelope />}
                     type="email"
@@ -53,17 +60,15 @@ const Login = ({ onSwitchToRegister }) => {
                     required
                 />
 
-                {/* Arreglamos el botón usando la prop 'variant' como debe ser */}
                 <Button variant='secondary' type="submit" >
                     Iniciar Sesión
                 </Button>
             </form>
-            <p className={styles.switchText}>
-                ¿No tienes una cuenta?
-                <Button variant='primary' onClick={onSwitchToRegister}>
-                    Regístrate
-                </Button>
-            </p>
+            
+            {/* --- CAMBIO --- */}
+            {/* Eliminamos el párrafo y botón de "Regístrate" */}
+            {/* <p className={styles.switchText}> ... </p> */}
+            {/* --- FIN CAMBIO --- */}
         </div>
     );
 };

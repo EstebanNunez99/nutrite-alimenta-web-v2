@@ -1,3 +1,4 @@
+//revisado
 // src/components/layout/MainLayout.jsx
 
 import React, { Suspense } from 'react';

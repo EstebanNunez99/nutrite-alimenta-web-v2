@@ -1,5 +1,6 @@
 // backend/config/db.js
 import mongoose from "mongoose";
+import logger from "../shared/utils/logger.js";
 
 const conectarDB = async () => {
     try {
@@ -15,6 +16,7 @@ const conectarDB = async () => {
         console.log('✅ MongoDB conectado correctamente');
     } catch (error) {
         console.error('❌ Error al conectar a MongoDB:', error.message);
+        logger.info('❌ Error al conectar a MongoDB:', error.message)
         process.exit(1); // Detener la app si no se puede conectar
     }
 };

@@ -1,3 +1,4 @@
+//revisado
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Button from '../components/ui/Button';
@@ -148,7 +149,7 @@ const AdminShippingConfigPage = () => {
                         required
                         placeholder="Ciudad"
                     />
-                    
+                    <p>*Recordatorio de mejora: Sacar codigo postal y país </p>
                     <Input
                         label="Código Postal"
                         type="text"

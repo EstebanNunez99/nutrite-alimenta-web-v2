@@ -1,22 +1,22 @@
+//verificado
 import express from 'express';
 import cors from 'cors'; 
 import dotenv from 'dotenv';
 
-// --- INICIO CAMBIO: Eliminamos las importaciones de node-cron ---
-// import cron from 'node-cron'; // ELIMINADO
-// import mongoose from 'mongoose'; // ELIMINADO
-// import Order from './features/orders/order.model.js'; // ELIMINADO
-// import Product from './features/products/product.model.js'; // ELIMINADO
-// --- FIN CAMBIO ---
-
 // --- Carga de Rutas y Configuración ---
 import conectarDB from './config/db.js'; 
 
+// --- CAMBIO ---
+// 1. Importamos las rutas de autenticación
+import authRoutes from './features/auth/auth.routes.js';
+// 2. Mantenemos las rutas de usuario (para /profile)
 import userRoutes from './features/users/user.routes.js';
 import productRoutes from './features/products/product.routes.js'
-import cartRoutes from './features/cart/cart.routes.js'; 
+// 3. Eliminamos las rutas del carrito
+// import cartRoutes from './features/cart/cart.routes.js'; 
 import orderRoutes from './features/orders/order.routes.js';
 import shippingRoutes from './features/shipping/shipping.routes.js';
+// --- FIN CAMBIO ---
 
 // 1. Cargar Variables de Entorno
 dotenv.config();
@@ -24,15 +24,10 @@ dotenv.config();
 // Verificar variables críticas al inicio
 if (!process.env.MONGO_URI) {
     console.error('❌ ERROR: MONGO_URI no está definida en el archivo .env');
-    console.error('   Por favor, crea un archivo .env en la carpeta backend/ con:');
-    console.error('   MONGO_URI=tu_string_de_conexion_mongodb');
     process.exit(1);
 }
-
 if (!process.env.JWT_SECRET) {
     console.error('❌ ERROR: JWT_SECRET no está definida en el archivo .env');
-    console.error('   Por favor, añade en tu archivo .env:');
-    console.error('   JWT_SECRET=tu_secret_key_segura_aqui');
     process.exit(1);
 }
 
@@ -43,13 +38,8 @@ const app = express();
 conectarDB();
 
 // 4. Middlewares
-// Configurar CORS para permitir peticiones desde el frontend
 app.use(cors({
-    // --- INICIO CAMBIO: Preparamos CORS para Producción ---
-    // Le decimos a CORS que acepte la URL de Vercel (que pondremos en .env)
-    // o la de localhost si esa variable no existe.
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    // --- FIN CAMBIO ---
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
@@ -59,7 +49,7 @@ app.use(express.json({ extended: true })); // Para poder leer JSON en el body
 // 5. Definir el Puerto
 const PORT = process.env.PORT || 4000;
 
-// 6. Health Check Endpoint (para evitar que servicios se duerman)
+// 6. Health Check Endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ 
         status: 'ok', 
@@ -69,10 +59,13 @@ app.get('/health', (req, res) => {
 });
 
 // 7. Cargar Módulos de Rutas
+console.log('Cargando ruta de autenticación en /api/auth');
+app.use('/api/auth', authRoutes); // <-- AÑADIDO
+
 console.log('Cargando ruta de usuarios en /api/users');
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
+// app.use('/api/cart', cartRoutes); // <-- ELIMINADO
 app.use('/api/orders', orderRoutes);
 app.use('/api/shipping', shippingRoutes); 
 

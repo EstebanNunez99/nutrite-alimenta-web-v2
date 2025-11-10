@@ -1,3 +1,4 @@
+//revisado
 import React, { useState, useEffect, useCallback } from 'react';
 import { getAllProducts, getAllCategories } from '../services/productService'; // Asumimos una nueva función
 import ProductCard from '../features/products/ProductCard';

@@ -1,4 +1,4 @@
-
+//veerificado
 import { useContext } from 'react';
 import { CartContext } from '../context/CartContext.js'; // <-- Asegúrate que la ruta sea correcta
 

@@ -1,3 +1,4 @@
+//revisado
 import React from 'react';
 import { NavLink } from 'react-router-dom'; // <-- 1. IMPORTA NavLink en lugar de Link
 import styles from './Button.module.css';

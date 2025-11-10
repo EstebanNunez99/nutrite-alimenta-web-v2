@@ -1,5 +1,6 @@
+//verificada
 import React, { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // <-- Eliminado (ya no se usa)
 import { useAuth } from '../hooks/useAuth';
 import { updateUserProfile } from '../services/userService';
 import { toast } from 'react-toastify';
@@ -12,7 +13,7 @@ import styles from './styles/ProfilePage.module.css';
 import useDocumentTitle from '../hooks/useDocumentTitle'
 
 const ProfilePage = () => {
-    useDocumentTitle('Mi Perfil')
+    useDocumentTitle('Mi Perfil'); // Esto ahora significa "Perfil de Admin"
     const { usuario, logout, updateUserContext } = useAuth();
     const fileInputRef = useRef(null);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -27,13 +28,11 @@ const ProfilePage = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validar tipo de archivo
+        // ... (Tu lógica de validación de imagen está bien)
         if (!file.type.startsWith('image/')) {
             toast.error('Por favor, selecciona una imagen válida.');
             return;
         }
-
-        // Validar tamaño (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('La imagen no debe superar los 5MB.');
             return;
@@ -42,13 +41,11 @@ const ProfilePage = () => {
         setUploadingPhoto(true);
         
         try {
-            // Convertir a base64 para almacenamiento simple
-            // En producción, deberías subir a Cloudinary o similar
+            // ... (Tu lógica de subida de imagen está bien)
             const reader = new FileReader();
             reader.onloadend = async () => {
                 try {
                     const base64String = reader.result;
-                    // Guardar como URL base64 (temporal, idealmente usar servicio de imágenes)
                     const updatedUser = await updateUserProfile({ fotoURL: base64String });
                     updateUserContext(updatedUser);
                     toast.success('Foto de perfil actualizada correctamente');
@@ -71,11 +68,11 @@ const ProfilePage = () => {
         <div className={styles.profileContainer}>
             {/* --- SECCIÓN DEL ENCABEZADO DE LA PÁGINA --- */}
             <div className={styles.header}>
-                <h2>Mi Perfil</h2>
+                <h2>Mi Perfil (Admin)</h2>
                 <Button variant="danger" onClick={logout}>Cerrar Sesión</Button>
             </div>
 
-            {/* --- SECCIÓN DE INFORMACIÓN DEL USUARIO --- */}
+            {/* --- SECCIÓN DE INFORMACIÓN DEL USUARIO (ADMIN) --- */}
             <div className={styles.infoSection}>
                 <div className={styles.accountInfo}>
                     <h3>Datos de la Cuenta</h3>
@@ -126,16 +123,11 @@ const ProfilePage = () => {
                 </div>
             </div>
 
-            {/* --- SECCIÓN DE ACCIONES (SOLO PARA CLIENTES) --- */}
-            {usuario.rol === 'cliente' && (
-                <div className={styles.actions}>
-                    <Link to="/mis-pedidos">
-                        <Button>Historial de compras</Button>
-                    </Link>
-                </div>
-            )}
+            {/* --- CAMBIO --- */}
+            {/* SECCIÓN DE ACCIONES (CLIENTE) ELIMINADA */}
+            {/* --- FIN CAMBIO --- */}
             
-            {/* --- SECCIÓN DE FORMULARIOS --- */}
+            {/* --- SECCIÓN DE FORMULARIOS (ADMIN) --- */}
             <div className={styles.formsContainer}>
                 <UpdateProfileForm />
                 <UpdatePasswordForm />

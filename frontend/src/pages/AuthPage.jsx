@@ -1,3 +1,4 @@
+//revisado
 // frontend/src/pages/AuthPage.jsx
 
 import React from 'react'; // Eliminamos 'useState'
