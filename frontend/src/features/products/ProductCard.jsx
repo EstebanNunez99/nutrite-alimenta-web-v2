@@ -54,7 +54,7 @@ const ProductCard = ({ product }) => {
                     <Link to={`/producto/${product._id}`}>
                         <Button variant='secondary' style={{width:'100%', marginBottom:'1rem'}} >Ver Detalles</Button>
                         <Button
-                            variant={product.stock > 0 ? 'primary' : 'disabled'}
+                            variant={(product.stock - product.stockComprometido) > 0 ? 'primary' : 'disabled'}
                             onClick={handleAddToCart}
                             disabled={product.stock === 0}
                             style={{width:'100%'}}
