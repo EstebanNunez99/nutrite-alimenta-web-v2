@@ -13,6 +13,7 @@ const AdminProductsPage = React.lazy(() => import('../pages/AdminProductsPage'))
 const AdminSalesHistoryPage = React.lazy(() => import('../pages/AdminSalesHistoryPage'));
 const AdminShippingConfigPage = React.lazy(() => import('../pages/AdminShippingConfigPage'));
 const AdminCreateManualOrderPage = React.lazy(() => import('../pages/AdminCreateManualOrderPage'));
+const AboutAt = React.lazy(()=> import('../pages/AboutAtPage'))
 // --- CAMBIO ---
 // const AdminUsersPage = React.lazy(() => import('../pages/AdminUsersPage')); // <-- Eliminado
 const CreateProductPage = React.lazy(() => import('../pages/CreateProductPage'));
@@ -43,6 +44,7 @@ const AppRouter = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orden/:id" element={<OrderDetailPage />} />
             <Route path="/seguimiento" element={<OrderTrackingPage />} /> 
+            <Route path='/acerca-de' element={<AboutAt/>} />
             
             {/* --- Rutas solo para Invitados (no logueados) --- */}
             <Route element={<GuestRoute />}>

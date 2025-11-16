@@ -1,0 +1,23 @@
+.aviso {
+    text-align: center;
+    color: #d9534f;
+    border: 2px solid #d9534f;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem; /* Espacio antes del botón de crear */
+}
+
+.aboutAt {
+    /* 1. Corrección de sintaxis (sin comillas) */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente (porque la dirección es columna) */
+    align-items: center;     /* Centra horizontalmente (porque la dirección es columna) */
+    text-align: center;      /* Asegura que el texto dentro de los hijos también se centre */
+    height: 80vh;            /* 80% de la altura de la pantalla */
+
+    /* 2. Añadido para centrar el contenedor (que tiene 80% de ancho) */
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}

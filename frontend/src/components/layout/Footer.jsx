@@ -13,7 +13,7 @@ const Footer = () => {
         <div className={styles.footerSection}>
           <h4 className={styles.footerTitle}>Sobre Mi Tienda</h4>
           <p className={styles.footerText}>
-            La mejor tienda online para encontrar todo lo que necesitás.Por ahora en modo desarroll.
+            La mejor tienda online para encontrar los mejores productos saludables. Por ahora en modo desarroll
           </p>
         </div>
 
@@ -22,11 +22,9 @@ const Footer = () => {
           <ul className={styles.navList}>
             <li><Link to="/">Inicio</Link></li>
             <li><Link to="/productos">Catálogo</Link></li>
-            {/* --- INICIO CAMBIO --- */}
-            {/* Eliminamos "Mi Perfil" y agregamos enlaces públicos */}
+            
             <li><Link to="/seguimiento">Mi pedido</Link></li>
             <li><Link to="/auth">Admin</Link></li>
-            {/* --- FIN CAMBIO --- */}
           </ul>
         </div>
 
@@ -64,6 +62,7 @@ const Footer = () => {
         <p>
           &copy; {new Date().getFullYear()} <span> Todos los derechos reservados. </span> Diseñado y desarrollado por Esteban Nuñez.
         </p>
+        <Link to="/acerca-de">Acerca de EN S.A</Link>
       </div>
     </footer>
   );
