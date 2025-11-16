@@ -66,7 +66,7 @@ const ProductDetailPage = () => {
 
                     {console.log(product.stockComprometido)}
 
-                    {product.stock > 0 && (
+                    {product.stock - product.stockComprometido > 0 && (
                         <div className={styles.actions}>
                             <div className={styles.quantityControl}>
                                 <label htmlFor="quantity">Cantidad:</label>
