@@ -60,9 +60,11 @@ const ProductDetailPage = () => {
                     <p className={styles.productDescription}>{product.descripcion}</p>
 
                     <div className={styles.stockInfo}>
-                        Disponible: <span>{product.stock}</span>
+                        Disponible: <span>{(product.stock - product.stockComprometido)}</span>
                         
                     </div>
+
+                    {console.log(product.stockComprometido)}
 
                     {product.stock > 0 && (
                         <div className={styles.actions}>
@@ -74,7 +76,7 @@ const ProductDetailPage = () => {
                                     onChange={(e) => setQuantity(Number(e.target.value))}
                                     className={styles.quantitySelect}
                                 >
-                                    {[...Array(product.stock).keys()].slice(0, 10).map(x => (
+                                    {[...Array((product.stock - product.stockComprometido)).keys()].slice(0, 10).map(x => (
                                         <option key={x + 1} value={x + 1}>{x + 1}</option>
                                     ))}
                                 </select>

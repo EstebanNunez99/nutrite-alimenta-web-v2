@@ -98,7 +98,11 @@
     transform: translateY(-2px); /* Un pequeño efecto de levantamiento */
 }
 
-.stockInfo span {
+.enStock span {
     font-weight: bold;
     color: var(--color-exito);
+}
+.stockAgotado span {
+    font-weight: bold;
+    color: var(--color-peligro);
 }

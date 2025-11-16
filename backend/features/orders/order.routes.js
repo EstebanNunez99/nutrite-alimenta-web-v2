@@ -7,7 +7,7 @@ import {
     // updateOrderToPaid, // Eliminada
     createMercadoPagoPreference,
     receiveMercadoPagoWebhook,
-    triggerOrderCleanup,
+    // triggerOrderCleanup,
     getAllOrders,
     updateDeliveryStatus,
     createManualOrder,
@@ -24,7 +24,7 @@ const router = express.Router();
 // (No requieren autenticación)
 
 // Endpoint para cron job
-router.get('/trigger-cron', triggerOrderCleanup);
+// router.get('/trigger-cron', triggerOrderCleanup);
 
 // Ruta pública para el Webhook de MercadoPago
 router.post('/webhook/mercadopago', receiveMercadoPagoWebhook);

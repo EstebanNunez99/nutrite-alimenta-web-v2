@@ -27,6 +27,8 @@ const ProductCard = ({ product }) => {
         e.stopPropagation();
         addItem(product, 1);
     };
+    
+    const hayStock = (product.stock - product.stockComprometido) > 0 
 
     return (
         <div className={styles.card}>
@@ -40,8 +42,9 @@ const ProductCard = ({ product }) => {
                 <h3 className={styles.cardTitle}>
                     <Link to={`/producto/${product._id}`}>{product.nombre}</Link>
                 </h3>
-                <div className={styles.stockInfo}>
-                    <p> Estado: <span>{product.stock > 0 ? 'En Stock' : 'Agotado'}</span></p>
+                
+                <div className={hayStock ? styles.enStock : styles.stockAgotado}>
+                    <p> Estado: <span>{hayStock ? 'En Stock' : 'Agotado'}</span></p>
                 </div>
                 {/* 3. Estilo de precio */}
                 <p className={styles.cardPrice}>{formattedPrice}</p>
@@ -57,7 +60,7 @@ const ProductCard = ({ product }) => {
                             style={{width:'100%'}}
                             
                         >
-                            {product.stock > 0 ? 'Añadir al Carrito' : 'Agotado'}
+                            {(product.stock - product.stockComprometido) > 0 ? 'Añadir al Carrito' : 'Agotado'}
                         </Button>
                     </Link>
                  </div>
