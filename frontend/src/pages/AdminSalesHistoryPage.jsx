@@ -222,7 +222,7 @@ const AdminSalesHistoryPage = () => {
             <div className={styles.summary}>
                 <p>Total de órdenes: <strong>{total}</strong></p>
             </div>
-
+            <p>*Poner estados de Entrega mas desciptivos, capaz cambiar por Estado de pedido 'Aceptado' 'Entregado'</p>
             <div className={styles.tableContainer}>
                 {orders.length === 0 ? (
                     <p className={styles.noData}>No se encontraron órdenes</p>

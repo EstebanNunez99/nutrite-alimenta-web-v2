@@ -82,13 +82,13 @@ const Header = () => {
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
       <div className={styles.leftSection}>
         <Link to="/" className={styles.logo}>
-          <img src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1761801097/logo-e-_xygea1.svg" alt="Logo E.N." className={styles.logoImg} />
+          <img src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png" alt="Logo E.N." className={styles.logoImg} />
         </Link>
       </div>
 
       <div className={styles.centerSection}>
         <Link to="/" className={styles.storeLink}>
-          <h1 className={styles.storeTitle}>EN S.A.</h1>
+          <h1 className={styles.storeTitle}>Nutrirte Alimenta</h1>
         </Link>
       </div>
 
