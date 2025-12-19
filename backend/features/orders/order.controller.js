@@ -2,20 +2,30 @@
 import { MercadoPagoConfig, Preference, Payment, MerchantOrder } from 'mercadopago';
 import mongoose from 'mongoose';
 import Order from './order.model.js';
-import Product from '../products/product.model.js'; 
+import Product from '../products/product.model.js';
 
 // @desc    Crear una nueva orden (para invitados)
 // @route   POST /api/orders
 // @access  Public
 export const createOrder = async (req, res) => {
-    
+
     // --- CAMBIO: INICIO ELIMINACIÓN DE TRANSACCIÓN ---
     // const session = await mongoose.startSession();
     // session.startTransaction();
     // --- FIN CAMBIO ---
 
     try {
-        const { customerInfo, shippingAddress, paymentMethod, shippingCost, items } = req.body;
+        const {
+            customerInfo,
+            shippingAddress,
+            paymentMethod,
+            shippingCost,
+            items,
+            // Nuevos Campos RF-006
+            shippingType,
+            fechaEntregaInmediato,
+            fechaEntregaBajoDemanda
+        } = req.body;
 
         if (!customerInfo || !customerInfo.nombre || !customerInfo.email) {
             // await session.abortTransaction(); // Eliminado
@@ -25,15 +35,24 @@ export const createOrder = async (req, res) => {
             // await session.abortTransaction(); // Eliminado
             return res.status(400).json({ msg: 'No hay productos en el carrito para crear una orden.' });
         }
-        
+
         const productsToUpdate = [];
         let calculatedSubtotal = 0;
         const processedItems = [];
+
+        // Detección de tipos para establecer estados iniciales (RF-006)
+        let hasStockProducts = false;
+        let hasDemandProducts = false;
 
         for (const item of items) {
             // --- CAMBIO ---
             // Buscamos el producto sin la sesión
             const product = await Product.findById(item.producto);
+
+            if (product) {
+                if (product.tipo === 'bajo_demanda') hasDemandProducts = true;
+                else hasStockProducts = true; // 'stock' o default
+            }
             // --- FIN CAMBIO ---
 
             if (!product) {
@@ -54,8 +73,8 @@ export const createOrder = async (req, res) => {
                     filter: { _id: product._id },
                     update: {
                         $inc: {
-                            stock: -item.cantidad,           
-                            stockComprometido: item.cantidad 
+                            stock: -item.cantidad,
+                            stockComprometido: item.cantidad
                         }
                     }
                 }
@@ -69,26 +88,33 @@ export const createOrder = async (req, res) => {
                 producto: product._id
             });
         }
-        
+
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
         const order = new Order({
             customerInfo: customerInfo,
-            items: processedItems, 
+            items: processedItems,
             shippingAddress,
             paymentMethod,
             subtotal: calculatedSubtotal,
             shippingCost: finalShippingCost,
             totalPrice: totalPrice,
-            status: 'pendiente', 
+            status: 'pendiente',
+
+            // RF-006: Asignación de campos de logística avanzada
+            shippingType: shippingType || 'unificado',
+            statusInmediato: hasStockProducts ? 'pendiente' : 'n/a',
+            statusBajoDemanda: hasDemandProducts ? 'pendiente' : 'n/a',
+            fechaEntregaInmediato: fechaEntregaInmediato,
+            fechaEntregaBajoDemanda: fechaEntregaBajoDemanda
         });
 
         // --- CAMBIO: ELIMINACIÓN DE TRANSACCIÓN ---
         // Estas operaciones ahora no son atómicas, pero funcionarán en el plan M0
         await Product.bulkWrite(productsToUpdate);
         const createdOrder = await order.save();
-        
+
         // await session.commitTransaction(); // Eliminado
         // --- FIN CAMBIO ---
 
@@ -100,8 +126,8 @@ export const createOrder = async (req, res) => {
         // --- FIN CAMBIO ---
         console.error(error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
-    
-    } 
+
+    }
     // --- CAMBIO ---
     // finally {
     //     session.endSession(); // Eliminado
@@ -134,7 +160,7 @@ export const createMercadoPagoPreference = async (req, res) => {
             return res.status(500).json({ msg: 'Error de configuración del servidor (MP Token).' });
         }
         const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const backendURL = process.env.BACKEND_URL || 'http://localhost:4000'; 
+        const backendURL = process.env.BACKEND_URL || 'http://localhost:4000';
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ msg: 'Orden no encontrada.' });
@@ -145,8 +171,8 @@ export const createMercadoPagoPreference = async (req, res) => {
         if (order.paymentMethod !== 'MercadoPago') {
             return res.status(400).json({ msg: 'El método de pago de esta orden no es MercadoPago.' });
         }
-        const client = new MercadoPagoConfig({ 
-            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN 
+        const client = new MercadoPagoConfig({
+            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
         });
         const preference = new Preference(client);
         const items = order.items.map(item => ({
@@ -154,9 +180,9 @@ export const createMercadoPagoPreference = async (req, res) => {
             title: item.nombre,
             quantity: item.cantidad,
             unit_price: item.precio,
-            currency_id: 'ARS', 
+            currency_id: 'ARS',
             picture_url: item.imagen,
-            description: item.nombre, 
+            description: item.nombre,
         }));
         if (order.shippingCost > 0) {
             items.push({
@@ -176,31 +202,31 @@ export const createMercadoPagoPreference = async (req, res) => {
                 email: order.customerInfo.email,
             },
             back_urls: {
-                success: `${frontendURL}/orden/${orderId}`, 
-                failure: `${frontendURL}/orden/${orderId}`, 
-                pending: `${frontendURL}/orden/${orderId}`  
+                success: `${frontendURL}/orden/${orderId}`,
+                failure: `${frontendURL}/orden/${orderId}`,
+                pending: `${frontendURL}/orden/${orderId}`
             },
-            external_reference: orderId, 
-            notification_url: `${backendURL}/api/orders/webhook/mercadopago` 
+            external_reference: orderId,
+            notification_url: `${backendURL}/api/orders/webhook/mercadopago`
         };
         console.log('Creando preferencia de MercadoPago...');
         const result = await preference.create({ body: preferenceBody });
         res.json({
-            id: result.id, 
-            init_point: result.init_point 
+            id: result.id,
+            init_point: result.init_point
         });
     } catch (error) {
         console.error('Error al crear preferencia de MercadoPago:', error);
         if (error.response && error.response.data) {
             console.error('Detalle del error de MP:', error.response.data);
-            return res.status(500).json({ 
-                msg: 'Error del servidor de MercadoPago', 
-                error: error.response.data 
+            return res.status(500).json({
+                msg: 'Error del servidor de MercadoPago',
+                error: error.response.data
             });
         }
-        res.status(500).json({ 
-            msg: 'Error en el servidor al crear preferencia', 
-            error: error.message 
+        res.status(500).json({
+            msg: 'Error en el servidor al crear preferencia',
+            error: error.message
         });
     }
 };
@@ -209,8 +235,8 @@ export const receiveMercadoPagoWebhook = async (req, res) => {
     console.log('[MP Webhook] Notificación recibida.');
     console.log('Body:', JSON.stringify(req.body, null, 2));
     try {
-        const client = new MercadoPagoConfig({ 
-            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN 
+        const client = new MercadoPagoConfig({
+            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
         });
         let paymentDetails = null;
         let paymentId = null;
@@ -263,8 +289,8 @@ export const receiveMercadoPagoWebhook = async (req, res) => {
             const productsToUpdate = order.items.map(item => ({
                 updateOne: {
                     filter: { _id: item.producto },
-                    update: { 
-                        $inc: { stockComprometido: -item.cantidad } 
+                    update: {
+                        $inc: { stockComprometido: -item.cantidad }
                     }
                 }
             }));
@@ -274,7 +300,7 @@ export const receiveMercadoPagoWebhook = async (req, res) => {
                 await Product.bulkWrite(productsToUpdate, { session });
                 order.status = 'completada';
                 order.paidAt = new Date(paymentDetails.date_approved);
-                order.paymentResult = { 
+                order.paymentResult = {
                     id: paymentDetails.id,
                     status: paymentDetails.status,
                     update_time: paymentDetails.date_updated,
@@ -363,6 +389,58 @@ export const updateDeliveryStatus = async (req, res) => {
     }
 };
 
+// @desc    Actualizar estados de entrega desglosados (RF-003/004)
+// @route   PUT /api/orders/:id/delivery-status/split
+// @access  Private/Admin
+export const updateSplitDeliveryStatus = async (req, res) => {
+    try {
+        const { statusInmediato, statusBajoDemanda } = req.body;
+        const validStatuses = ['pendiente', 'listo', 'enviado', 'entregado', 'n/a'];
+
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ msg: 'Orden no encontrada.' });
+        }
+
+        // Validaciones
+        if (statusInmediato && !validStatuses.includes(statusInmediato)) {
+            return res.status(400).json({ msg: 'Estado Inmediato inválido.' });
+        }
+        if (statusBajoDemanda && !validStatuses.includes(statusBajoDemanda)) {
+            return res.status(400).json({ msg: 'Estado Bajo Demanda inválido.' });
+        }
+
+        if (statusInmediato) order.statusInmediato = statusInmediato;
+        if (statusBajoDemanda) order.statusBajoDemanda = statusBajoDemanda;
+
+        // Lógica de "deliveredAt" parcial? 
+        // Si ambos están entregados (o uno entregado y otro n/a), marcamos globalmente entregado?
+        // Por simplicidad, el 'deliveryStatus' global lo mantendremos sincronizado manualmente o 
+        // lo dejaremos como un resumen. Vamos a actualizarlo automáticamente si podemos.
+
+        // Auto-update global status logic (Opcional)
+        const s1 = order.statusInmediato;
+        const s2 = order.statusBajoDemanda;
+
+        // Helper para saber si 'cuenta' como completado
+        const isDone = (s) => s === 'entregado' || s === 'n/a';
+
+        if (isDone(s1) && isDone(s2)) {
+            order.deliveryStatus = 'entregado';
+            if (!order.deliveredAt) order.deliveredAt = new Date();
+        } else if (order.statusInmediato === 'enviado' || order.statusBajoDemanda === 'enviado') {
+            order.deliveryStatus = 'enviado';
+        }
+
+        await order.save();
+        res.json(order);
+
+    } catch (error) {
+        console.error('Error al actualizar estados desglosados:', error);
+        res.status(500).json({ msg: 'Error en el servidor', error: error.message });
+    }
+};
+
 
 export const createManualOrder = async (req, res) => {
     // --- CAMBIO: INICIO ELIMINACIÓN DE TRANSACCIÓN ---
@@ -377,7 +455,7 @@ export const createManualOrder = async (req, res) => {
             // await session.abortTransaction(); // Eliminado
             return res.status(400).json({ msg: 'customerInfo (nombre, email) y items son requeridos.' });
         }
-        
+
         const productsToUpdate = [];
         let calculatedSubtotal = 0;
 
@@ -448,7 +526,7 @@ export const createManualOrder = async (req, res) => {
         const createdOrder = await order.save(); // Sin { session }
         // await session.commitTransaction(); // Eliminado
         // --- FIN CAMBIO ---
-        
+
         res.status(201).json(createdOrder);
 
     } catch (error) {
@@ -457,7 +535,7 @@ export const createManualOrder = async (req, res) => {
         // --- FIN CAMBIO ---
         console.error(error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
-    } 
+    }
     // --- CAMBIO ---
     // finally {
     //     session.endSession(); // Eliminado
@@ -478,8 +556,8 @@ export const trackOrder = async (req, res) => {
         if (!orderId || !email) {
             return res.status(400).json({ msg: 'Se requiere ID de orden y email.' });
         }
-        const order = await Order.findOne({ 
-            _id: orderId, 
+        const order = await Order.findOne({
+            _id: orderId,
             'customerInfo.email': email.toLowerCase()
         });
         if (order) {
@@ -489,7 +567,7 @@ export const trackOrder = async (req, res) => {
         }
     } catch (error) {
         if (error.kind === 'ObjectId') {
-             return res.status(404).json({ msg: 'Orden no encontrada.' });
+            return res.status(404).json({ msg: 'Orden no encontrada.' });
         }
         res.status(500).json({ msg: 'Error en el servidor' });
     }
@@ -528,8 +606,8 @@ export const updateOrderStatus = async (req, res) => {
             productsToUpdate = order.items.map(item => ({
                 updateOne: {
                     filter: { _id: item.producto },
-                    update: { 
-                        $inc: { stockComprometido: -item.cantidad } 
+                    update: {
+                        $inc: { stockComprometido: -item.cantidad }
                     }
                 }
             }));
@@ -544,7 +622,7 @@ export const updateOrderStatus = async (req, res) => {
                     update: {
                         $inc: {
                             stock: item.cantidad,
-                            stockComprometido: -item.cantidad 
+                            stockComprometido: -item.cantidad
                         }
                     }
                 }
@@ -557,12 +635,12 @@ export const updateOrderStatus = async (req, res) => {
             await Product.bulkWrite(productsToUpdate); // Sin { session }
             // --- FIN CAMBIO ---
         }
-        
+
         // --- CAMBIO ---
         const updatedOrder = await order.save(); // Sin { session }
         // await session.commitTransaction(); // Eliminado
         // --- FIN CAMBIO ---
-        
+
         res.json(updatedOrder);
 
     } catch (error) {
@@ -571,7 +649,7 @@ export const updateOrderStatus = async (req, res) => {
         // --- FIN CAMBIO ---
         console.error('Error al actualizar estado de orden (admin):', error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
-    } 
+    }
     // --- CAMBIO ---
     // finally {
     //     session.endSession(); // Eliminado

@@ -9,7 +9,7 @@ import Product from './product.model.js';
 // @access  Private/Admin
 export const createProduct = async (req, res) => {
     try {
-        const { nombre, descripcion, precio, stock, categoria, imagen } = req.body;
+        const { nombre, descripcion, precio, stock, categoria, imagen, tipo } = req.body;
         const vendedor = req.usuario.id;
 
         // Verificamos si ya existe un producto con ese nombre
@@ -24,7 +24,9 @@ export const createProduct = async (req, res) => {
             precio,
             stock,
             categoria,
+            categoria,
             imagen,
+            tipo,
             vendedor
         });
 
@@ -43,7 +45,7 @@ export const getAllProducts = async (req, res) => {
     try {
         // 1. Definimos el tamaño de la página
         const pageSize = 8; // Puedes ajustar este número
-        
+
         // 2. Obtenemos parámetros de consulta
         const page = Number(req.query.page) || Number(req.query.pageNumber) || 1;
         const sort = req.query.sort || '';
@@ -52,11 +54,11 @@ export const getAllProducts = async (req, res) => {
 
         // 3. Construir el query de filtrado
         let query = {};
-        
+
         if (category) {
             query.categoria = category;
         }
-        
+
         if (search) {
             query.$or = [
                 { nombre: { $regex: search, $options: 'i' } },
@@ -81,7 +83,7 @@ export const getAllProducts = async (req, res) => {
         } else {
             sortOption.createdAt = -1; // Por defecto, más nuevos primero
         }
-        
+
         // 6. Buscar los productos con filtros y ordenamiento
         const products = await Product.find(query)
             .sort(sortOption)
@@ -107,10 +109,10 @@ export const getAllCategories = async (req, res) => {
     try {
         // Obtener todas las categorías únicas de los productos
         const categories = await Product.distinct('categoria');
-        
+
         // Filtrar valores null/undefined y ordenar
         const filteredCategories = categories.filter(cat => cat && cat.trim() !== '').sort();
-        
+
         res.json(filteredCategories);
     } catch (error) {
         console.error(error);
@@ -139,7 +141,7 @@ export const getProductById = async (req, res) => {
 // @access  Private/Admin
 export const updateProduct = async (req, res) => {
     try {
-        const { nombre, descripcion, precio, stock, categoria, imagen } = req.body;
+        const { nombre, descripcion, precio, stock, categoria, imagen, tipo } = req.body;
         const product = await Product.findById(req.params.id);
 
         if (product) {
@@ -148,7 +150,9 @@ export const updateProduct = async (req, res) => {
             product.precio = precio || product.precio;
             product.stock = stock !== undefined ? stock : product.stock;
             product.categoria = categoria || product.categoria;
+            product.categoria = categoria || product.categoria;
             product.imagen = imagen || product.imagen;
+            product.tipo = tipo || product.tipo;
 
             const updatedProduct = await product.save();
             res.json(updatedProduct);

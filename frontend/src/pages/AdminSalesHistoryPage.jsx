@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 // --- CAMBIO ---
-// Importamos la nueva función updateOrderStatus
-import { getAllOrders, updateDeliveryStatus, updateOrderStatus } from '../services/orderService';
+// Importamos la nueva función updateOrderStatus y updateSplitDeliveryStatus
+import { getAllOrders, updateDeliveryStatus, updateOrderStatus, updateSplitDeliveryStatus } from '../services/orderService';
 // --- FIN CAMBIO ---
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
@@ -22,7 +22,7 @@ const AdminSalesHistoryPage = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    
+
     const [filters, setFilters] = useState({
         status: '',
         deliveryStatus: '',
@@ -76,10 +76,27 @@ const AdminSalesHistoryPage = () => {
         try {
             await updateOrderStatus(orderId, newStatus);
             toast.success(`Orden marcada como ${newStatus}`);
-            loadOrders(); // Recargamos para ver los cambios
+            loadOrders();
         } catch (error) {
             console.error('Error al actualizar estado de pago:', error);
             toast.error(error.response?.data?.msg || 'Error al actualizar el estado de pago');
+        }
+    };
+
+    // Nueva función para manejar estados desglosados
+    const handleSplitStatusChange = async (orderId, type, newStatus) => {
+        // type: 'inmediato' | 'demanda'
+        try {
+            await updateSplitDeliveryStatus(
+                orderId,
+                type === 'inmediato' ? newStatus : undefined,
+                type === 'demanda' ? newStatus : undefined
+            );
+            toast.success('Estado actualizado');
+            loadOrders();
+        } catch (error) {
+            console.error('Error updating split status:', error);
+            toast.error('Error al actualizar estado');
         }
     };
     // --- FIN CAMBIO ---
@@ -235,7 +252,7 @@ const AdminSalesHistoryPage = () => {
                                 <th>Fecha</th>
                                 <th>Total</th>
                                 <th>Estado Pago</th>
-                                <th>Estado Entrega</th>
+                                <th>Logística / Entrega</th>
                                 {/* --- CAMBIO --- */}
                                 <th>Acciones</th>
                                 {/* --- FIN CAMBIO --- */}
@@ -245,7 +262,7 @@ const AdminSalesHistoryPage = () => {
                             {orders.map(order => {
                                 const statusBadge = getStatusBadge(order.status);
                                 const deliveryBadge = getDeliveryStatusBadge(order.deliveryStatus);
-                                
+
                                 return (
                                     <tr key={order._id}>
                                         <td>
@@ -283,22 +300,87 @@ const AdminSalesHistoryPage = () => {
                                             {/* --- FIN CAMBIO --- */}
                                         </td>
                                         <td>
-                                            <span className={`${styles.badge} ${deliveryBadge.class}`}>
-                                                {deliveryBadge.label}
-                                            </span>
-                                            {/* Solo permitimos cambiar entrega si está pagada */}
-                                            {order.status === 'completada' && (
-                                                <select
-                                                    className={styles.statusSelect}
-                                                    value={order.deliveryStatus}
-                                                    onChange={(e) => handleDeliveryStatusChange(order._id, e.target.value)}
-                                                    style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}
-                                                >
-                                                    <option value="no_enviado">No Enviado</option>
-                                                    <option value="enviado">Enviado</option>
-                                                    <option value="entregado">Entregado</option>
-                                                </select>
-                                            )}
+                                            {/* LOGISTICA SPLIT (RF-003/004/006) */}
+                                            <div className={styles.logisticsCell}>
+                                                <small style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold', color: '#555' }}>
+                                                    {order.shippingType ? order.shippingType.toUpperCase() : 'STANDARD'}
+                                                </small>
+
+                                                {/* SI ES DESGLOSADO: Mostramos dos selectores */}
+                                                {order.shippingType === 'desglosado' ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+
+                                                        {/* Inmediato */}
+                                                        {order.statusInmediato !== 'n/a' && (
+                                                            <div style={{ borderLeft: '3px solid #007bff', paddingLeft: '5px' }}>
+                                                                <small>Stock YA ({new Date(order.fechaEntregaInmediato || order.createdAt).toLocaleDateString()}):</small>
+                                                                <select
+                                                                    className={styles.miniSelect}
+                                                                    value={order.statusInmediato}
+                                                                    onChange={(e) => handleSplitStatusChange(order._id, 'inmediato', e.target.value)}
+                                                                    disabled={order.status !== 'completada'}
+                                                                >
+                                                                    <option value="pendiente">Pendiente</option>
+                                                                    <option value="listo">Listo</option>
+                                                                    <option value="enviado">Enviado</option>
+                                                                    <option value="entregado">Entregado</option>
+                                                                </select>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Bajo Demanda */}
+                                                        {order.statusBajoDemanda !== 'n/a' && (
+                                                            <div style={{ borderLeft: '3px solid #28a745', paddingLeft: '5px' }}>
+                                                                <small>Demanda ({new Date(order.fechaEntregaBajoDemanda).toLocaleDateString()}):</small>
+                                                                <select
+                                                                    className={styles.miniSelect}
+                                                                    value={order.statusBajoDemanda}
+                                                                    onChange={(e) => handleSplitStatusChange(order._id, 'demanda', e.target.value)}
+                                                                    disabled={order.status !== 'completada'}
+                                                                >
+                                                                    <option value="pendiente">Pendiente</option>
+                                                                    <option value="listo">Listo</option>
+                                                                    <option value="enviado">Enviado</option>
+                                                                    <option value="entregado">Entregado</option>
+                                                                </select>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    /* SI ES UNIFICADO o RETIRO (O LEGACY): Mostramos uno solo */
+                                                    /* Si tiene statusBajoDemanda activo, usamos ese como principal. Si no, Inmediato. */
+                                                    <div>
+                                                        {order.statusBajoDemanda && order.statusBajoDemanda !== 'n/a' ? (
+                                                            <>
+                                                                <small>Entrega ({new Date(order.fechaEntregaBajoDemanda || order.createdAt).toLocaleDateString()}):</small>
+                                                                <select
+                                                                    className={styles.miniSelect}
+                                                                    value={order.statusBajoDemanda}
+                                                                    onChange={(e) => handleSplitStatusChange(order._id, 'demanda', e.target.value)}
+                                                                    disabled={order.status !== 'completada'}
+                                                                >
+                                                                    <option value="pendiente">Pendiente</option>
+                                                                    <option value="listo">Listo</option>
+                                                                    <option value="enviado">Enviado</option>
+                                                                    <option value="entregado">Entregado</option>
+                                                                </select>
+                                                            </>
+                                                        ) : (
+                                                            /* Fallback a DeliveryStatus legacy o Inmediato */
+                                                            <select
+                                                                className={styles.miniSelect}
+                                                                value={order.deliveryStatus || 'no_enviado'}
+                                                                onChange={(e) => handleDeliveryStatusChange(order._id, e.target.value)}
+                                                                disabled={order.status !== 'completada'}
+                                                            >
+                                                                <option value="no_enviado">Pendiente</option>
+                                                                <option value="enviado">Enviado</option>
+                                                                <option value="entregado">Entregado</option>
+                                                            </select>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td>
                                             <Button

@@ -1,10 +1,10 @@
 //verificado
 import express from 'express';
-import cors from 'cors'; 
+import cors from 'cors';
 import dotenv from 'dotenv';
 
 // --- Carga de Rutas y Configuración ---
-import conectarDB from './config/db.js'; 
+import conectarDB from './config/db.js';
 
 // --- CAMBIO ---
 // 1. Importamos las rutas de autenticación
@@ -16,6 +16,7 @@ import productRoutes from './features/products/product.routes.js'
 // import cartRoutes from './features/cart/cart.routes.js'; 
 import orderRoutes from './features/orders/order.routes.js';
 import shippingRoutes from './features/shipping/shipping.routes.js';
+import settingsRoutes from './features/settings/settings.routes.js';
 // --- FIN CAMBIO ---
 
 // 1. Cargar Variables de Entorno
@@ -51,8 +52,8 @@ const PORT = process.env.PORT || 4000;
 
 // 6. Health Check Endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'ok', 
+    res.status(200).json({
+        status: 'ok',
         timestamp: new Date().toISOString(),
         service: 'backend'
     });
@@ -67,7 +68,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 // app.use('/api/cart', cartRoutes); // <-- ELIMINADO
 app.use('/api/orders', orderRoutes);
-app.use('/api/shipping', shippingRoutes); 
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // 8. Iniciar el Servidor
 app.listen(PORT, '0.0.0.0', () => {

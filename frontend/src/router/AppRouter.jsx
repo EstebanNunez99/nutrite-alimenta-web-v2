@@ -12,8 +12,9 @@ const AdminDashboardPage = React.lazy(() => import('../pages/AdminDashboardPage'
 const AdminProductsPage = React.lazy(() => import('../pages/AdminProductsPage'));
 const AdminSalesHistoryPage = React.lazy(() => import('../pages/AdminSalesHistoryPage'));
 const AdminShippingConfigPage = React.lazy(() => import('../pages/AdminShippingConfigPage'));
+const SettingsPage = React.lazy(() => import('../pages/SettingsPage'));
 const AdminCreateManualOrderPage = React.lazy(() => import('../pages/AdminCreateManualOrderPage'));
-const AboutAt = React.lazy(()=> import('../pages/AboutAtPage'))
+const AboutAt = React.lazy(() => import('../pages/AboutAtPage'))
 // --- CAMBIO ---
 // const AdminUsersPage = React.lazy(() => import('../pages/AdminUsersPage')); // <-- Eliminado
 const CreateProductPage = React.lazy(() => import('../pages/CreateProductPage'));
@@ -43,9 +44,9 @@ const AppRouter = () => {
             <Route path="/carrito" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orden/:id" element={<OrderDetailPage />} />
-            <Route path="/seguimiento" element={<OrderTrackingPage />} /> 
-            <Route path='/acerca-de' element={<AboutAt/>} />
-            
+            <Route path="/seguimiento" element={<OrderTrackingPage />} />
+            <Route path='/acerca-de' element={<AboutAt />} />
+
             {/* --- Rutas solo para Invitados (no logueados) --- */}
             <Route element={<GuestRoute />}>
                 {/* Esta es ahora la página de LOGIN DE ADMIN */}
@@ -54,11 +55,11 @@ const AppRouter = () => {
 
             {/* --- Rutas Privadas (solo para usuarios logueados) --- */}
             <Route element={<PrivateRoute />}>
-                
+
                 {/* --- CAMBIO: Reactivamos el perfil del Admin --- */}
                 <Route path="/perfil" element={<ProfilePage />} />
                 {/* --- FIN CAMBIO --- */}
-                
+
                 {/* Rutas de Admin (Se mantienen sin cambios) */}
                 <Route path="/admin" element={<AdminRoute />}>
                     <Route index element={<AdminDashboardPage />} />
@@ -70,10 +71,11 @@ const AppRouter = () => {
                     <Route path="products/edit/:id" element={<EditProductPage />} />
                     <Route path="sales-history" element={<AdminSalesHistoryPage />} />
                     <Route path="shipping-config" element={<AdminShippingConfigPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
                     <Route path="orders/manual" element={<AdminCreateManualOrderPage />} />
                 </Route>
             </Route>
-            
+
             <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );

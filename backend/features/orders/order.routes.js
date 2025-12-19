@@ -1,9 +1,9 @@
 //revisado
 import express from 'express';
-import { 
-    createOrder, 
+import {
+    createOrder,
     // getMyOrders, // Eliminada
-    getOrderById, 
+    getOrderById,
     // updateOrderToPaid, // Eliminada
     createMercadoPagoPreference,
     receiveMercadoPagoWebhook,
@@ -12,7 +12,8 @@ import {
     updateDeliveryStatus,
     createManualOrder,
     trackOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    updateSplitDeliveryStatus
 } from './order.controller.js';
 import { authMiddleware } from '../../shared/middlewares/auth.middleware.js';
 import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js';
@@ -54,6 +55,9 @@ router.post('/manual', authMiddleware, adminMiddleware, createManualOrder);
 
 // Actualizar estado de entrega (Admin)
 router.put('/:id/delivery', authMiddleware, adminMiddleware, updateDeliveryStatus);
+
+// Actualizar estados desglosados (Admin)
+router.put('/:id/delivery-status/split', authMiddleware, adminMiddleware, updateSplitDeliveryStatus);
 
 router.put('/:id/status', authMiddleware, adminMiddleware, updateOrderStatus);
 

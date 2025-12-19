@@ -85,3 +85,15 @@ export const updateOrderStatus = async (orderId, status) => {
     const res = await api.put(`/orders/${orderId}/status`, { status });
     return res.data;
 };
+
+/**
+ * Actualizar estados de entrega parciaes (Inmediato / Bajo Demanda)
+ * Llama a: PUT /api/orders/:id/delivery-status/split
+ */
+export const updateSplitDeliveryStatus = async (orderId, statusInmediato, statusBajoDemanda) => {
+    const res = await api.put(`/orders/${orderId}/delivery-status/split`, {
+        statusInmediato,
+        statusBajoDemanda
+    });
+    return res.data;
+};

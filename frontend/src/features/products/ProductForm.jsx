@@ -10,17 +10,23 @@ import styles from '../../pages/styles/EditProductPage.module.css';
 
 const ProductForm = ({ onSubmit, initialData = {} }) => {
     const [formData, setFormData] = useState({
-        nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: ''
+        nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: '', tipo: 'stock'
     });
     const [uploading, setUploading] = useState(false);
 
-    const { nombre, descripcion, precio, stock, categoria, imagen } = initialData || {};
+    const { nombre, descripcion, precio, stock, categoria, imagen, tipo } = initialData || {};
 
     useEffect(() => {
         setFormData({
-            nombre: nombre || '', descripcion: descripcion || '', precio: precio || '', stock: stock || '', categoria: categoria || '', imagen: imagen || ''
+            nombre: nombre || '',
+            descripcion: descripcion || '',
+            precio: precio || '',
+            stock: stock || '',
+            categoria: categoria || '',
+            imagen: imagen || '',
+            tipo: tipo || 'stock'
         });
-    }, [nombre, descripcion, precio, stock, categoria, imagen]);
+    }, [nombre, descripcion, precio, stock, categoria, imagen, tipo]);
 
     const textareaRef = useRef(null);
     useEffect(() => {
@@ -83,6 +89,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             <div className={styles.formGroup}>
                 <label htmlFor="descripcion" className={styles.formLabel}>Descripción</label>
                 <textarea id="descripcion" name="descripcion" value={formData.descripcion} onChange={onChange} required className={styles.formInput} ref={textareaRef} rows={1} />
+            </div>
+
+            <div className={styles.formGroup}>
+                <label htmlFor="tipo" className={styles.formLabel}>Tipo de Producto</label>
+                <select id="tipo" name="tipo" value={formData.tipo} onChange={onChange} className={styles.formInput}>
+                    <option value="stock">Stock Inmediato</option>
+                    <option value="bajo_demanda">Bajo Demanda</option>
+                </select>
             </div>
 
             <div className={styles.formGroup}>

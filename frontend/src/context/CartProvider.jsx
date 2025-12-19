@@ -9,7 +9,7 @@ import { CartContext } from './CartContext.js';
 // import { useAuth } from '../hooks/useAuth';
 import { toast } from 'react-toastify';
 // Mantenemos createOrder porque SÍ lo necesitamos para el checkout
-import { createOrder } from '../services/orderService'; 
+import { createOrder } from '../services/orderService';
 // --- FIN CAMBIO ---
 
 const CartProvider = ({ children }) => {
@@ -74,20 +74,23 @@ const CartProvider = ({ children }) => {
                 newItems[itemIndex].cantidad += quantity;
             } else {
                 // Si no existe, lo añadimos al array
-                newItems.push({ 
+                newItems.push({
                     // Guardamos solo los datos necesarios
                     producto: {
                         _id: product._id,
                         nombre: product.nombre,
                         imagen: product.imagen,
                         precio: product.precio,
-                        stock: product.stock // Guardamos stock para futuras validaciones
+                        precio: product.precio,
+                        stock: product.stock, // Guardamos stock para futuras validaciones
+                        tipo: product.tipo // RF-001/002: Guardamos el tipo
                     },
                     cantidad: quantity,
                     // Replicamos la estructura del backend
                     nombre: product.nombre,
                     imagen: product.imagen,
                     precio: product.precio,
+                    tipo: product.tipo // RF-001/002: Guardamos el tipo
                 });
             }
 
@@ -115,7 +118,7 @@ const CartProvider = ({ children }) => {
         if (newQuantity < 1) {
             return removeItem(productId);
         }
-        
+
         try {
             const newItems = cart.items.map(item =>
                 item.producto._id === productId ? { ...item, cantidad: newQuantity } : item
@@ -126,7 +129,7 @@ const CartProvider = ({ children }) => {
             toast.error("No se pudo actualizar la cantidad.");
         }
     };
-    
+
     // Función reescrita para ser síncrona
     const clearCart = () => {
         setCart({ items: [] });
@@ -156,11 +159,11 @@ const CartProvider = ({ children }) => {
             };
 
             const newOrder = await createOrder(completeOrderData);
-            
+
             // Después de crear la orden con éxito, limpiamos el carrito local
-            clearCart(); 
+            clearCart();
             return newOrder; // Devolvemos la orden creada para que la página pueda redirigir
-        
+
         } catch (error) {
             console.error("Error en el proceso de checkout:", error);
             throw error; // Relanzamos para que CheckoutPage lo maneje
@@ -170,14 +173,14 @@ const CartProvider = ({ children }) => {
 
 
     return (
-        <CartContext.Provider 
-            value={{ 
-                cart, 
-                loading, 
-                addItem, 
-                removeItem, 
-                updateItemQuantity, 
-                clearCart, 
+        <CartContext.Provider
+            value={{
+                cart,
+                loading,
+                addItem,
+                removeItem,
+                updateItemQuantity,
+                clearCart,
                 itemCount,
                 isCartOpen,
                 openCart,

@@ -26,7 +26,7 @@ const OrderDetailPage = () => {
 
     useEffect(() => {
         let interval = null;
-        
+
         const fetchOrder = async () => {
             try {
                 const data = await getOrderById(orderId);
@@ -42,12 +42,12 @@ const OrderDetailPage = () => {
                 return null;
             }
         };
-        
+
         const loadOrder = async () => {
             setLoading(true);
             const orderData = await fetchOrder();
             setLoading(false);
-            
+
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('status');
             if (paymentStatus === 'approved' && orderData) {
@@ -55,7 +55,7 @@ const OrderDetailPage = () => {
             } else if (paymentStatus === 'rejected' && orderData) {
                 toast.error('El pago fue rechazado. Por favor, intenta nuevamente.');
             }
-            
+
             if (orderData && orderData.status === 'pendiente') {
                 interval = setInterval(async () => {
                     const updatedOrder = await fetchOrder();
@@ -68,9 +68,9 @@ const OrderDetailPage = () => {
                 }, 5000);
             }
         };
-        
+
         loadOrder();
-        
+
         return () => {
             if (interval) clearInterval(interval);
         };
@@ -120,7 +120,7 @@ const OrderDetailPage = () => {
                     minute: '2-digit'
                 })}
             </p>
-            
+
             {/* --- INICIO CAMBIO (MOSTRAR DATOS DEL INVITADO) --- */}
             <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>Datos del Cliente</h4>
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
@@ -167,7 +167,7 @@ const OrderDetailPage = () => {
             <hr />
 
             <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>Dirección de Envío</h4>
-             {/* ... (renderizado de dirección - sin cambios) ... */}
+            {/* ... (renderizado de dirección - sin cambios) ... */}
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
                 <p style={{ margin: '0.5rem 0' }}><strong>Dirección:</strong> {order.shippingAddress.address}</p>
                 <p style={{ margin: '0.5rem 0' }}><strong>Ciudad:</strong> {order.shippingAddress.city}</p>
@@ -177,7 +177,7 @@ const OrderDetailPage = () => {
             <hr />
 
             <div style={{ textAlign: 'right', marginTop: '1.5rem', marginBottom: '2rem' }}>
-                 {/* ... (renderizado de totales - sin cambios) ... */}
+                {/* ... (renderizado de totales - sin cambios) ... */}
                 {order.subtotal && (
                     <div style={{ marginBottom: '0.5rem', color: '#666' }}>
                         <strong>Subtotal:</strong> {new Intl.NumberFormat("es-AR", {
@@ -220,28 +220,76 @@ const OrderDetailPage = () => {
                                 Comprobante N° : {order.paymentResult.id}
                             </p>
                         )}
-                        {order.deliveryStatus === 'entregado' ? (
-                            <p style={{ color: 'var(--color-exito, #28a745)', marginTop: '0.5rem', fontWeight: 'bold' }}>
-                                ✓ Entregado el {order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('es-AR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) : 'N/A'}
-                            </p>
-                        ) : order.deliveryStatus === 'enviado' ? (
-                            <p style={{ color: 'var(--color-advertencia, #ffc107)', marginTop: '0.5rem' }}>
-                                📦 En cámiino
-                            </p>
+                        {/* LÓGICA DE ESTADOS DE ENVÍO (RF-003/004/006) */}
+                        {order.shippingType === 'desglosado' ? (
+                            <div style={{ marginTop: '1rem' }}>
+                                <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Estado de tus envíos:</p>
+
+                                {/* 1. Stock Inmediato */}
+                                {order.statusInmediato !== 'n/a' && (
+                                    <div style={{ padding: '0.5rem', borderLeft: '3px solid #007bff', backgroundColor: '#f0f8ff', marginBottom: '0.5rem' }}>
+                                        <strong>Stock Inmediato:</strong>
+                                        <span style={{ marginLeft: '5px', color: '#007bff' }}>
+                                            {order.statusInmediato === 'pendiente' ? '⏳ Pendiente' :
+                                                order.statusInmediato === 'listo' ? '🎁 Listo' :
+                                                    order.statusInmediato === 'enviado' ? '🚀 Enviado' :
+                                                        order.statusInmediato === 'entregado' ? '✅ Entregado' : order.statusInmediato}
+                                        </span>
+                                        <div style={{ fontSize: '0.85em', color: '#666', marginTop: '2px' }}>
+                                            (Fecha Estimada: {new Date(order.fechaEntregaInmediato || order.createdAt).toLocaleDateString()})
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 2. Bajo Demanda */}
+                                {order.statusBajoDemanda !== 'n/a' && (
+                                    <div style={{ padding: '0.5rem', borderLeft: '3px solid #28a745', backgroundColor: '#f0fff4' }}>
+                                        <strong>Bajo Demanda:</strong>
+                                        <span style={{ marginLeft: '5px', color: '#28a745' }}>
+                                            {order.statusBajoDemanda === 'pendiente' ? '⏳ Producción' :
+                                                order.statusBajoDemanda === 'listo' ? '🎁 Listo' :
+                                                    order.statusBajoDemanda === 'enviado' ? '🚀 Enviado' :
+                                                        order.statusBajoDemanda === 'entregado' ? '✅ Entregado' : order.statusBajoDemanda}
+                                        </span>
+                                        <div style={{ fontSize: '0.85em', color: '#666', marginTop: '2px' }}>
+                                            (Fecha Estimada: {new Date(order.fechaEntregaBajoDemanda).toLocaleDateString()})
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
-                            <p style={{ color: '#666', marginTop: '0.5rem' }}>
-                                ⏳ Pendiente de envío
-                            </p>
+                            /* ENVÍO UNIFICADO / RETIRO */
+                            <div>
+                                {order.deliveryStatus === 'entregado' ? (
+                                    <p style={{ color: 'var(--color-exito, #28a745)', marginTop: '0.5rem', fontWeight: 'bold' }}>
+                                        ✓ Entregado el {order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString('es-AR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) : 'N/A'}
+                                    </p>
+                                ) : order.deliveryStatus === 'enviado' || order.statusBajoDemanda === 'enviado' ? (
+                                    <p style={{ color: 'var(--color-advertencia, #ffc107)', marginTop: '0.5rem' }}>
+                                        📦 En camino
+                                    </p>
+                                ) : (
+                                    <p style={{ color: '#666', marginTop: '0.5rem' }}>
+                                        ⏳ {order.shippingType === 'retiro' ? 'Pendiente de Retiro' : 'Pendiente de Envío'}
+                                        {/* Mostrar fecha si aplica */}
+                                        {order.fechaEntregaBajoDemanda && (
+                                            <span style={{ display: 'block', fontSize: '0.9em' }}>
+                                                (Programado para: {new Date(order.fechaEntregaBajoDemanda).toLocaleDateString()})
+                                            </span>
+                                        )}
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </div>
 
-                // ESTADO 2: CANCELADA (Expirada) - (Sin cambios)
+                    // ESTADO 2: CANCELADA (Expirada) - (Sin cambios)
                 ) : order.status === 'cancelada' ? (
                     <div>
                         <p style={{ color: 'var(--color-peligro, #dc3545)', fontWeight: 'bold', marginBottom: '1rem' }}>
@@ -253,7 +301,7 @@ const OrderDetailPage = () => {
                         </p>
                     </div>
 
-                // ESTADO 3: PENDIENTE (Lista para pagar)
+                    // ESTADO 3: PENDIENTE (Lista para pagar)
                 ) : (
                     <div>
                         <p style={{ color: 'var(--color-advertencia, #ffc107)', fontWeight: 'bold', marginBottom: '1rem' }}>

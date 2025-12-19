@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema({
         min: [0, 'El stock no puede ser negativo.'],
         default: 0
     },
-    
+
     stockComprometido: {
         type: Number,
         required: true,
@@ -33,11 +33,11 @@ const productSchema = new mongoose.Schema({
         min: [0, 'El stock comprometido no puede ser negativo.'],
         // Evitamos que comprometido supere al stock total
         validate: {
-        validator: function (v) {
-            // En updates directos (updateOne) esta validación puede no correr a menos que uses { runValidators: true }.
-            return v <= this.stock;
-        },
-        message: 'El stock comprometido ({VALUE}) no puede superar el stock total.'
+            validator: function (v) {
+                // En updates directos (updateOne) esta validación puede no correr a menos que uses { runValidators: true }.
+                return v <= this.stock;
+            },
+            message: 'El stock comprometido ({VALUE}) no puede superar el stock total.'
         }
     },
 
@@ -45,6 +45,13 @@ const productSchema = new mongoose.Schema({
         type: String,
         trim: true,
         default: 'General'
+    },
+    // RF-001/002: Clasificación de productos
+    tipo: {
+        type: String,
+        enum: ['stock', 'bajo_demanda'],
+        default: 'stock',
+        required: true
     },
     imagen: {
         type: String,
@@ -62,10 +69,10 @@ const productSchema = new mongoose.Schema({
 
 
 productSchema.virtual('stockDisponible').get(function () {
-  const total = this.stock ?? 0;
-  const comprometido = this.stockComprometido ?? 0;
-  const disponible = total - comprometido;
-  return disponible < 0 ? 0 : disponible;
+    const total = this.stock ?? 0;
+    const comprometido = this.stockComprometido ?? 0;
+    const disponible = total - comprometido;
+    return disponible < 0 ? 0 : disponible;
 });
 
 

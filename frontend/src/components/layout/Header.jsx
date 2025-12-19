@@ -33,6 +33,9 @@ const NavLinks = ({ onLinkClick }) => {
           <Button to="/admin" variant="primary" onClick={onLinkClick}>
             Panel Admin
           </Button>
+          <Button to="/admin/settings" variant="secondary" onClick={onLinkClick}>
+            Configuracion
+          </Button>
           <Button to="/perfil" variant="link" onClick={onLinkClick}>
             Mi Perfil
           </Button>
@@ -43,12 +46,12 @@ const NavLinks = ({ onLinkClick }) => {
         <>
           <Button to="/" variant="link" onClick={onLinkClick}>Inicio</Button>
           <Button to="/productos" variant="link" onClick={onLinkClick}>Catálogo</Button>
-          
+
           {/* Reemplazamos "Mis Pedidos" por "Seguimiento" */}
           <Button to="/seguimiento" variant="link" onClick={onLinkClick}>
             Mi pedido
           </Button>
-          
+
           <Button variant="link" onClick={handleCartClick}>
             Carrito ({itemCount})
           </Button>
