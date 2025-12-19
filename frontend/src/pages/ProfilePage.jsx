@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 // import { Link } from 'react-router-dom'; // <-- Eliminado (ya no se usa)
 import { useAuth } from '../hooks/useAuth';
 import { updateUserProfile } from '../services/userService';
+import { uploadImage } from '../services/uploadService';
 import { toast } from 'react-toastify';
 import UpdateProfileForm from '../features/users/UpdateProfileForm';
 import UpdatePasswordForm from '../features/users/UpdatePasswordForm';
@@ -17,7 +18,7 @@ const ProfilePage = () => {
     const { usuario, logout, updateUserContext } = useAuth();
     const fileInputRef = useRef(null);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
-    
+
     if (!usuario) return <Spinner />;
 
     const handlePhotoClick = () => {
@@ -39,27 +40,16 @@ const ProfilePage = () => {
         }
 
         setUploadingPhoto(true);
-        
+
         try {
-            // ... (Tu lógica de subida de imagen está bien)
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                try {
-                    const base64String = reader.result;
-                    const updatedUser = await updateUserProfile({ fotoURL: base64String });
-                    updateUserContext(updatedUser);
-                    toast.success('Foto de perfil actualizada correctamente');
-                } catch (error) {
-                    console.error('Error al actualizar foto:', error);
-                    toast.error('Error al actualizar la foto de perfil');
-                } finally {
-                    setUploadingPhoto(false);
-                }
-            };
-            reader.readAsDataURL(file);
+            const url = await uploadImage(file);
+            const updatedUser = await updateUserProfile({ fotoURL: url });
+            updateUserContext(updatedUser);
+            toast.success('Foto de perfil actualizada correctamente');
         } catch (error) {
-            console.error('Error al procesar foto:', error);
-            toast.error('Error al procesar la imagen');
+            console.error('Error al actualizar foto:', error);
+            toast.error('Error al actualizar la foto de perfil');
+        } finally {
             setUploadingPhoto(false);
         }
     };
@@ -89,7 +79,7 @@ const ProfilePage = () => {
                         </p>
                     </div>
                 </div>
-                
+
                 <div className={styles.profilePhoto}>
                     <h3>Foto de Perfil</h3>
                     <div className={styles.photoContainer}>
@@ -112,8 +102,8 @@ const ProfilePage = () => {
                             onChange={handlePhotoChange}
                             style={{ display: 'none' }}
                         />
-                        <Button 
-                            variant='secondary' 
+                        <Button
+                            variant='secondary'
                             onClick={handlePhotoClick}
                             disabled={uploadingPhoto}
                         >
@@ -126,7 +116,7 @@ const ProfilePage = () => {
             {/* --- CAMBIO --- */}
             {/* SECCIÓN DE ACCIONES (CLIENTE) ELIMINADA */}
             {/* --- FIN CAMBIO --- */}
-            
+
             {/* --- SECCIÓN DE FORMULARIOS (ADMIN) --- */}
             <div className={styles.formsContainer}>
                 <UpdateProfileForm />
