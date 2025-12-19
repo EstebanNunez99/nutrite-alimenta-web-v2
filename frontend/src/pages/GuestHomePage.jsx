@@ -46,8 +46,8 @@ const GuestHomePage = () => {
         <>
             <section className={styles.hero}>
                 <div className={styles.heroContent}>
-                    <h1 className={styles.title}>Bienvenido a mi tienda</h1>
-                    <p className={styles.subtitle}>Descubre productos de alta calidad y ofertas increíbles.</p>
+                    <h1 className={styles.title}>Somos Nutrirte Alimenta</h1>
+                    <p className={styles.subtitle}>Descubre productos saludables de alta calidad y con un sabor irrsistible.</p>
                     <div className={styles.buttonContainer}>
                         <Link to="/productos">
                             <Button variant='primary'>Explorar Catálogo</Button>

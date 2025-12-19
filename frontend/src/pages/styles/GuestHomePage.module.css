@@ -75,4 +75,6 @@
     .buttonContainer a, .buttonContainer a button, .buttonContainer button { width: 100%; }
     .carouselSection, .spotlightSection { padding: 3rem 1rem; }
     .sectionTitle, .spotlightTitle { font-size: 2rem; }
+    .hero {background-image: url('https://res.cloudinary.com/drk7ixxdm/image/upload/v1766160297/fondo-generico-responsivo-nutrirte_epy3oo.png'); min-height: 50vh; padding: 4rem 2rem; color: white; position: relative;}
+
 }
