@@ -51,7 +51,7 @@ const AdminProductsPage = () => {
     const handlePageChange = (newPage) => {
         setPage(newPage);
     };
-    if (loading) return <Spinner/>;
+    if (loading) return <Spinner />;
     if (error) return <div><p>{error}</p></div>;
 
     return (
@@ -85,7 +85,11 @@ const AdminProductsPage = () => {
                                 <td className={styles.tableCell}>{product.nombre}</td>
                                 <td className={styles.tableCell}>${product.precio}</td>
                                 <td className={styles.tableCell}>{product.stock}</td>
-                                <td className={styles.tableCell}>{product.categoria}</td>
+                                <td className={styles.tableCell}>
+                                    {Array.isArray(product.categoria)
+                                        ? product.categoria.join(', ')
+                                        : product.categoria}
+                                </td>
                                 <td className={`${styles.tableCell} ${styles.actionsCell}`}>
                                     <Link to={`/admin/products/edit/${product._id}`}>
                                         <Button variant='secondary'>Editar</Button>
@@ -99,7 +103,7 @@ const AdminProductsPage = () => {
                     </tbody>
                 </table>
             </div>
-            
+
             <div className={styles.paginationContainer}>
                 <Paginate pages={totalPages} page={page} onPageChange={handlePageChange} />
             </div>

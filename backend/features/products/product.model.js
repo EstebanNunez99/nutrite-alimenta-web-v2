@@ -27,9 +27,9 @@ const productSchema = new mongoose.Schema({
     },
 
     categoria: {
-        type: String,
+        type: [String],
         trim: true,
-        default: 'General'
+        default: ['General']
     },
     // RF-001/002: Clasificación de productos
     tipo: {

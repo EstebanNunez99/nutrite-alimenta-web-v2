@@ -56,6 +56,7 @@ export const getAllProducts = async (req, res) => {
         let query = {};
 
         if (category) {
+            // Si la categoría viene en query, buscamos que esté dentro del array 'categoria'
             query.categoria = category;
         }
 

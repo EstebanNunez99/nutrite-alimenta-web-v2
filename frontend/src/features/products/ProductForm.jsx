@@ -27,7 +27,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             descripcion: descripcion || '',
             precio: precio || '',
             stock: stock || '',
-            categoria: categoria || '',
+            stock: stock || '',
+            categoria: Array.isArray(categoria) ? categoria : (categoria ? [categoria] : []), // Manejo legacy string
             imagen: imagen || '',
             tipo: tipo || 'stock'
         });
@@ -98,21 +99,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleCategoryChange = (e) => {
-        const value = e.target.value;
-        if (value === 'new_category_option') {
-            setIsNewCategory(true);
-            setFormData({ ...formData, categoria: '' });
-        } else {
-            setIsNewCategory(false);
-            setFormData({ ...formData, categoria: value });
-        }
-    };
 
-    const handleNewCategoryChange = (e) => {
-        setNewCategoryName(e.target.value);
-        setFormData({ ...formData, categoria: e.target.value });
-    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -177,21 +164,64 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             )}
 
             <div className={styles.formGroup}>
-                <label htmlFor="categoria" className={styles.formLabel}>Categoría</label>
+                <label htmlFor="categoria" className={styles.formLabel}>Categorías</label>
+
+                {/* Visualización de Tags */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    {Array.isArray(formData.categoria) && formData.categoria.map((cat, index) => (
+                        <span key={index} style={{
+                            backgroundColor: 'var(--color-principal-claro)',
+                            color: 'white',
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: '16px',
+                            fontSize: '0.9rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                        }}>
+                            {cat}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const newCats = formData.categoria.filter(c => c !== cat);
+                                    setFormData({ ...formData, categoria: newCats });
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    padding: 0
+                                }}
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+
                 {!isNewCategory ? (
                     <select
                         id="categoria"
-                        name="categoria"
-                        value={formData.categoria}
-                        onChange={handleCategoryChange}
+                        value=""
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === 'new_category_option') {
+                                setIsNewCategory(true);
+                            } else if (value && !formData.categoria.includes(value)) {
+                                const currentCats = Array.isArray(formData.categoria) ? formData.categoria : [];
+                                setFormData({ ...formData, categoria: [...currentCats, value] });
+                            }
+                        }}
                         className={styles.formInput}
                         style={{ backgroundColor: 'white' }}
                     >
-                        <option value="">Selecciona una categoría</option>
-                        {categories.map((cat, index) => (
+                        <option value="">+ Añadir categoría existente</option>
+                        {categories.filter(c => !formData.categoria.includes(c)).map((cat, index) => (
                             <option key={index} value={cat}>{cat}</option>
                         ))}
-                        <option value="new_category_option" style={{ fontWeight: 'bold', color: 'var(--color-principal)' }}>+ Nueva categoría</option>
+                        <option value="new_category_option" style={{ fontWeight: 'bold', color: 'var(--color-principal)' }}>+ Crear nueva categoría</option>
                     </select>
                 ) : (
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -199,15 +229,44 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                             type="text"
                             placeholder="Nombre de la nueva categoría"
                             value={newCategoryName}
-                            onChange={handleNewCategoryChange}
-                            required
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    if (newCategoryName.trim()) {
+                                        const currentCats = Array.isArray(formData.categoria) ? formData.categoria : [];
+                                        if (!currentCats.includes(newCategoryName.trim())) {
+                                            setFormData({ ...formData, categoria: [...currentCats, newCategoryName.trim()] });
+                                        }
+                                        setNewCategoryName('');
+                                        setIsNewCategory(false);
+                                    }
+                                }
+                            }}
                             className={styles.formInput}
                             autoFocus
                         />
                         <Button
                             type="button"
+                            variant="primary"
+                            onClick={() => {
+                                if (newCategoryName.trim()) {
+                                    const currentCats = Array.isArray(formData.categoria) ? formData.categoria : [];
+                                    if (!currentCats.includes(newCategoryName.trim())) {
+                                        setFormData({ ...formData, categoria: [...currentCats, newCategoryName.trim()] });
+                                    }
+                                }
+                                setNewCategoryName('');
+                                setIsNewCategory(false);
+                            }}
+                            style={{ padding: '0.5rem 1rem' }}
+                        >
+                            Añadir
+                        </Button>
+                        <Button
+                            type="button"
                             variant="secondary"
-                            onClick={() => { setIsNewCategory(false); setFormData({ ...formData, categoria: '' }); }}
+                            onClick={() => { setIsNewCategory(false); setNewCategoryName(''); }}
                             style={{ padding: '0.5rem 1rem' }}
                         >
                             Cancelar
