@@ -4,8 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 // --- CAMBIO ---
-import { getOrderById, createMercadoPagoPreference } from '../services/orderService';
-// import { useAuth } from '../hooks/useAuth'; // <-- Eliminado
+import { getOrderById } from '../services/orderService';
 // --- FIN CAMBIO ---
 import { toast } from 'react-toastify';
 import Spinner from '../components/ui/Spinner';
@@ -76,22 +75,7 @@ const OrderDetailPage = () => {
         };
     }, [orderId]);
 
-    const handlePayment = async () => {
-        setIsPaying(true);
-        toast.info('Redirigiendo a MercadoPago...');
-        try {
-            const preference = await createMercadoPagoPreference(orderId);
-            if (preference.init_point) {
-                window.location.href = preference.init_point;
-            } else {
-                throw new Error('No se pudo obtener la URL de pago.');
-            }
-        } catch (err) {
-            toast.error('Hubo un error al generar el link de pago.');
-            console.error("Error al crear preferencia de MP:", err);
-            setIsPaying(false);
-        }
-    };
+
 
     if (loading) return <Spinner />;
     if (error) return <h2>{error}</h2>;
@@ -309,26 +293,14 @@ const OrderDetailPage = () => {
                         </p>
                         {/* --- CAMBIO CRÍTICO --- */}
                         {/* Eliminamos la envoltura 'if (usuario && ...)' */}
-                        <>
-                            {order.paymentMethod === 'MercadoPago' ? (
-                                <Button
-                                    onClick={handlePayment}
-                                    variant="primary"
-                                    disabled={isPaying}
-                                >
-                                    {isPaying ? 'Generando link de pago...' : 'Pagar con MercadoPago'}
-                                </Button>
-                            ) : (
-                                <div style={{ padding: '1rem', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffc107' }}>
-                                    <p style={{ margin: 0, color: '#856404' }}>
-                                        <strong>Método de pago: {order.paymentMethod}</strong>
-                                    </p>
-                                    <p style={{ margin: '0.5rem 0 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                                        Para este método de pago, contacta al vendedor para completar el pago.
-                                    </p>
-                                </div>
-                            )}
-                        </>
+                        <div style={{ padding: '1rem', backgroundColor: '#fff3cd', borderRadius: '4px', border: '1px solid #ffc107' }}>
+                            <p style={{ margin: 0, color: '#856404' }}>
+                                <strong>Método de pago: {order.paymentMethod}</strong>
+                            </p>
+                            <p style={{ margin: '0.5rem 0 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                                Para este método de pago, contacta al vendedor para completar el pago.
+                            </p>
+                        </div>
                         {/* --- FIN CAMBIO --- */}
                     </div>
                 )}

@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { uploadImage } from '../../services/uploadService';
+import { getAllCategories } from '../../services/productService';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import styles from '../../pages/styles/EditProductPage.module.css';
@@ -13,10 +14,14 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: '', tipo: 'stock'
     });
     const [uploading, setUploading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [isNewCategory, setIsNewCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     const { nombre, descripcion, precio, stock, categoria, imagen, tipo } = initialData || {};
 
     useEffect(() => {
+        // Cargar datos iniciales
         setFormData({
             nombre: nombre || '',
             descripcion: descripcion || '',
@@ -26,7 +31,25 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             imagen: imagen || '',
             tipo: tipo || 'stock'
         });
+
+        // Si hay una categoría inicial, verificar si está en la lista (se hará después de cargar categorías)
+        if (categoria) {
+            // Lógica simple: si viene data, asumimos que no es "nueva" en modo UI hasta que el usuario toque
+        }
     }, [nombre, descripcion, precio, stock, categoria, imagen, tipo]);
+
+    // Cargar categorías al montar
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const cats = await getAllCategories();
+                setCategories(cats);
+            } catch (error) {
+                console.error("Error al cargar categorías", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const textareaRef = useRef(null);
     useEffect(() => {
@@ -40,6 +63,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
     const fileInputRef = useRef(null);
 
     const handleImageChange = async (e) => {
+        // ... (mismo código de imagen)
         const file = e.target.files[0];
         if (!file) return;
 
@@ -74,9 +98,33 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleCategoryChange = (e) => {
+        const value = e.target.value;
+        if (value === 'new_category_option') {
+            setIsNewCategory(true);
+            setFormData({ ...formData, categoria: '' });
+        } else {
+            setIsNewCategory(false);
+            setFormData({ ...formData, categoria: value });
+        }
+    };
+
+    const handleNewCategoryChange = (e) => {
+        setNewCategoryName(e.target.value);
+        setFormData({ ...formData, categoria: e.target.value });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        // Lógica de limpieza antes de enviar
+        const finalData = { ...formData };
+
+        // Si es bajo demanda, stock es 0 (o lo que defina el backend por defecto, pero enviamos 0 explícito para limpiar)
+        if (finalData.tipo === 'bajo_demanda') {
+            finalData.stock = 0;
+        }
+
+        onSubmit(finalData);
     };
 
     return (
@@ -88,12 +136,28 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
             <div className={styles.formGroup}>
                 <label htmlFor="descripcion" className={styles.formLabel}>Descripción</label>
-                <textarea id="descripcion" name="descripcion" value={formData.descripcion} onChange={onChange} required className={styles.formInput} ref={textareaRef} rows={1} />
+                <textarea
+                    id="descripcion"
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={onChange}
+                    required
+                    className={styles.formInput}
+                    ref={textareaRef}
+                    rows={1}
+                />
             </div>
 
             <div className={styles.formGroup}>
                 <label htmlFor="tipo" className={styles.formLabel}>Tipo de Producto</label>
-                <select id="tipo" name="tipo" value={formData.tipo} onChange={onChange} className={styles.formInput}>
+                <select
+                    id="tipo"
+                    name="tipo"
+                    value={formData.tipo}
+                    onChange={onChange}
+                    className={styles.formInput}
+                    style={{ backgroundColor: 'white' }}
+                >
                     <option value="stock">Stock Inmediato</option>
                     <option value="bajo_demanda">Bajo Demanda</option>
                 </select>
@@ -104,15 +168,52 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                 <Input id="precio" type="number" name="precio" value={formData.precio} onChange={onChange} required className={styles.formInput} />
             </div>
 
-            <div className={styles.formGroup}>
-                <label htmlFor="stock" className={styles.formLabel}>Stock</label>
-                <Input id="stock" type="number" name="stock" value={formData.stock} onChange={onChange} required className={styles.formInput} />
-            </div>
+            {/* Renderizado Condicional del Stock */}
+            {formData.tipo === 'stock' && (
+                <div className={styles.formGroup}>
+                    <label htmlFor="stock" className={styles.formLabel}>Stock Disponible</label>
+                    <Input id="stock" type="number" name="stock" value={formData.stock} onChange={onChange} required className={styles.formInput} />
+                </div>
+            )}
 
             <div className={styles.formGroup}>
-                <p>*Recordatorio de mejora: Poder seleccionar la categoria desde una lista desplegable, sin necesidad de escribir (añadir categorías a la lista manualmente con un boton de +)</p>
                 <label htmlFor="categoria" className={styles.formLabel}>Categoría</label>
-                <Input id="categoria" type="text" name="categoria" value={formData.categoria} onChange={onChange} className={styles.formInput} />
+                {!isNewCategory ? (
+                    <select
+                        id="categoria"
+                        name="categoria"
+                        value={formData.categoria}
+                        onChange={handleCategoryChange}
+                        className={styles.formInput}
+                        style={{ backgroundColor: 'white' }}
+                    >
+                        <option value="">Selecciona una categoría</option>
+                        {categories.map((cat, index) => (
+                            <option key={index} value={cat}>{cat}</option>
+                        ))}
+                        <option value="new_category_option" style={{ fontWeight: 'bold', color: 'var(--color-principal)' }}>+ Nueva categoría</option>
+                    </select>
+                ) : (
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <Input
+                            type="text"
+                            placeholder="Nombre de la nueva categoría"
+                            value={newCategoryName}
+                            onChange={handleNewCategoryChange}
+                            required
+                            className={styles.formInput}
+                            autoFocus
+                        />
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => { setIsNewCategory(false); setFormData({ ...formData, categoria: '' }); }}
+                            style={{ padding: '0.5rem 1rem' }}
+                        >
+                            Cancelar
+                        </Button>
+                    </div>
+                )}
             </div>
 
             <div className={styles.formGroup}>

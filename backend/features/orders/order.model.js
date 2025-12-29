@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema({
             cantidad: { type: Number, required: true },
             imagen: { type: String, required: true },
             precio: { type: Number, required: true },
+            tipo: { type: String, required: true, default: 'stock' }, // Nuevo campo
             producto: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,

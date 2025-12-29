@@ -25,13 +25,7 @@ export const createOrder = async (orderData) => {
     return response.data;
 };
 
-/**
- * Crea una preferencia de pago de MercadoPago (Público).
- */
-export const createMercadoPagoPreference = async (orderId) => {
-    const response = await api.post(`/orders/${orderId}/create-payment-preference`);
-    return response.data;
-};
+
 
 /**
  * Rastrea una orden por ID y Email (Público).

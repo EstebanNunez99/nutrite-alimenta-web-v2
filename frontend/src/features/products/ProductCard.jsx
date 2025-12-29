@@ -27,8 +27,11 @@ const ProductCard = ({ product }) => {
         e.stopPropagation();
         addItem(product, 1);
     };
-    
-    const hayStock = (product.stock - product.stockComprometido) > 0 
+
+    const isBajoDemanda = product.tipo === 'bajo_demanda';
+    const stockReal = product.stock;
+    // Si es bajo demanda, siempre hay stock (o no se controla por stock físico inmediato)
+    const hayStock = isBajoDemanda || stockReal > 0;
 
     return (
         <div className={styles.card}>
@@ -42,9 +45,13 @@ const ProductCard = ({ product }) => {
                 <h3 className={styles.cardTitle}>
                     <Link to={`/producto/${product._id}`}>{product.nombre}</Link>
                 </h3>
-                
+
                 <div className={hayStock ? styles.enStock : styles.stockAgotado}>
-                    <p> Estado: <span>{hayStock ? 'En Stock' : 'Agotado'}</span></p>
+                    <p> Estado:
+                        <span>
+                            {isBajoDemanda ? 'Bajo Demanda' : (hayStock ? 'En Stock' : 'Agotado')}
+                        </span>
+                    </p>
                 </div>
                 {/* 3. Estilo de precio */}
                 <p className={styles.cardPrice}>{formattedPrice}</p>
@@ -52,18 +59,18 @@ const ProductCard = ({ product }) => {
                 {/* 4. El botón ahora tiene la clase correcta para el estilo */}
                 <div className={styles.cardButtons}>
                     <Link to={`/producto/${product._id}`}>
-                        <Button variant='secondary' style={{width:'100%', marginBottom:'1rem'}} >Ver Detalles</Button>
+                        <Button variant='secondary' style={{ width: '100%', marginBottom: '1rem' }} >Ver Detalles</Button>
                         <Button
-                            variant={(product.stock - product.stockComprometido) > 0 ? 'primary' : 'disabled'}
+                            variant={hayStock ? 'primary' : 'disabled'}
                             onClick={handleAddToCart}
-                            disabled={product.stock === 0}
-                            style={{width:'100%'}}
-                            
+                            disabled={!hayStock}
+                            style={{ width: '100%' }}
+
                         >
-                            {(product.stock - product.stockComprometido) > 0 ? 'Añadir al Carrito' : 'Agotado'}
+                            {hayStock ? 'Añadir al Carrito' : 'Agotado'}
                         </Button>
                     </Link>
-                 </div>
+                </div>
             </div>
         </div>
     );

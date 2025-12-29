@@ -20,7 +20,7 @@ const CheckoutPage = () => {
     // Estado del formulario de cliente y envío
     const [customerInfo, setCustomerInfo] = useState({ nombre: '', email: '', telefono: '' });
     const [shippingAddress, setShippingAddress] = useState({ address: '', city: '' });
-    const [paymentMethod, setPaymentMethod] = useState('MercadoPago');
+    const [paymentMethod, setPaymentMethod] = useState('Transferencia');
 
     // Configuración y Lógica de Negocio (RF-001/006)
     const [settings, setSettings] = useState(null);
@@ -280,9 +280,8 @@ const CheckoutPage = () => {
                         {/* Pago */}
                         <h3 className="mt-4">4. Pago</h3>
                         <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={styles.selectInput}>
-                            <option value="MercadoPago">MercadoPago</option>
-                            <option value="Efectivo">Efectivo</option>
                             <option value="Transferencia">Transferencia Bancaria</option>
+                            <option value="Efectivo">Efectivo</option>
                         </select>
 
                         <div className={styles.totalSection}>

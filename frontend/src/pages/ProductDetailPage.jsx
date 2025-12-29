@@ -6,7 +6,7 @@ import { useCart } from '../hooks/useCart';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
-import styles from './styles/ProductDetailPage.module.css'; 
+import styles from './styles/ProductDetailPage.module.css';
 
 const ProductDetailPage = () => {
     const { id } = useParams();
@@ -40,8 +40,8 @@ const ProductDetailPage = () => {
         addItem(product, quantity);
     };
 
-    const handleStockEngaged = ()=>{
-        
+    const handleStockEngaged = () => {
+
     }
 
     if (loading) return <Spinner />;
@@ -60,25 +60,34 @@ const ProductDetailPage = () => {
                     <p className={styles.productDescription}>{product.descripcion}</p>
 
                     <div className={styles.stockInfo}>
-                        Disponible: <span>{(product.stock - product.stockComprometido)}</span>
-                        
+                        {product.tipo === 'bajo_demanda' ? (
+                            <span>Disponibilidad: <strong style={{ color: '#e67e22' }}>Bajo Demanda (Producción)</strong></span>
+                        ) : (
+                            <span>Disponible: {(product.stock - product.stockComprometido)}</span>
+                        )}
                     </div>
 
                     {console.log(product.stockComprometido)}
 
-                    {product.stock - product.stockComprometido > 0 && (
+                    {(product.tipo === 'bajo_demanda' || (product.stock - product.stockComprometido) > 0) && (
                         <div className={styles.actions}>
                             <div className={styles.quantityControl}>
                                 <label htmlFor="quantity">Cantidad:</label>
-                                <select 
-                                    id="quantity" 
-                                    value={quantity} 
+                                <select
+                                    id="quantity"
+                                    value={quantity}
                                     onChange={(e) => setQuantity(Number(e.target.value))}
                                     className={styles.quantitySelect}
                                 >
-                                    {[...Array((product.stock - product.stockComprometido)).keys()].slice(0, 10).map(x => (
-                                        <option key={x + 1} value={x + 1}>{x + 1}</option>
-                                    ))}
+                                    {/* Si es bajo demanda mostramos una lista fija (ej. 1 a 20), sino basado en stock */}
+                                    {product.tipo === 'bajo_demanda'
+                                        ? [...Array(20).keys()].map(x => (
+                                            <option key={x + 1} value={x + 1}>{x + 1}</option>
+                                        ))
+                                        : [...Array((product.stock - product.stockComprometido)).keys()].slice(0, 10).map(x => (
+                                            <option key={x + 1} value={x + 1}>{x + 1}</option>
+                                        ))
+                                    }
                                 </select>
                             </div>
                             <Button variant="primary" onClick={handleAddToCart}>

@@ -1,8 +1,9 @@
 // backend/features/orders/order.controller.js
-import { MercadoPagoConfig, Preference, Payment, MerchantOrder } from 'mercadopago';
+
 import mongoose from 'mongoose';
 import Order from './order.model.js';
 import Product from '../products/product.model.js';
+import { sendOrderNotification, sendDemandSummary } from '../../shared/utils/email.service.js';
 
 // @desc    Crear una nueva orden (para invitados)
 // @route   POST /api/orders
@@ -59,32 +60,37 @@ export const createOrder = async (req, res) => {
                 throw new Error(`Producto ${item.nombre} (ID: ${item.producto}) no encontrado.`);
             }
 
-            const stockDisponible = product.stock - product.stockComprometido;
-
-            if (stockDisponible < item.cantidad) {
-                throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${stockDisponible} unidades disponibles.`);
+            // Validación de stock: Solo si NO es bajo demanda
+            // Para 'stock', la cantidad pedida no debe superar el stock actual
+            if (product.tipo !== 'bajo_demanda') {
+                if (product.stock < item.cantidad) {
+                    throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${product.stock} unidades disponibles.`);
+                }
             }
 
             const priceFromDB = product.precio;
             calculatedSubtotal += item.cantidad * priceFromDB;
 
-            productsToUpdate.push({
-                updateOne: {
-                    filter: { _id: product._id },
-                    update: {
-                        $inc: {
-                            stock: -item.cantidad,
-                            stockComprometido: item.cantidad
+            // Solo actualizamos stock si NO es bajo demanda
+            if (product.tipo !== 'bajo_demanda') {
+                productsToUpdate.push({
+                    updateOne: {
+                        filter: { _id: product._id },
+                        update: {
+                            $inc: {
+                                stock: -item.cantidad
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             processedItems.push({
                 nombre: product.nombre,
                 cantidad: item.cantidad,
                 imagen: product.imagen || '/images/sample.jpg',
                 precio: priceFromDB,
+                tipo: product.tipo, // Guardamos el tipo
                 producto: product._id
             });
         }
@@ -115,6 +121,9 @@ export const createOrder = async (req, res) => {
         await Product.bulkWrite(productsToUpdate);
         const createdOrder = await order.save();
 
+        // RF-010: Enviar notificación por email (async, no bloqueante)
+        sendOrderNotification(createdOrder);
+
         // await session.commitTransaction(); // Eliminado
         // --- FIN CAMBIO ---
 
@@ -135,7 +144,7 @@ export const createOrder = async (req, res) => {
     // --- FIN CAMBIO ---
 };
 
-// ... (Todas las demás funciones: getOrderById, createMercadoPagoPreference, receiveMercadoPagoWebhook, getAllOrders, updateDeliveryStatus) ...
+// ... (Todas las demás funciones: getOrderById, getAllOrders, updateDeliveryStatus) ...
 // ... (Se quedan igual) ...
 // (Tuve que omitirlas de esta respuesta para no superar el límite de caracteres, pero déjalas en tu archivo)
 
@@ -152,182 +161,7 @@ export const getOrderById = async (req, res) => {
     }
 };
 
-export const createMercadoPagoPreference = async (req, res) => {
-    try {
-        const { id: orderId } = req.params;
-        if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-            console.error('ERROR: MERCADOPAGO_ACCESS_TOKEN no está definido en .env');
-            return res.status(500).json({ msg: 'Error de configuración del servidor (MP Token).' });
-        }
-        const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const backendURL = process.env.BACKEND_URL || 'http://localhost:4000';
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(404).json({ msg: 'Orden no encontrada.' });
-        }
-        if (order.status !== 'pendiente') {
-            return res.status(400).json({ msg: 'Esta orden no está pendiente de pago.' });
-        }
-        if (order.paymentMethod !== 'MercadoPago') {
-            return res.status(400).json({ msg: 'El método de pago de esta orden no es MercadoPago.' });
-        }
-        const client = new MercadoPagoConfig({
-            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
-        });
-        const preference = new Preference(client);
-        const items = order.items.map(item => ({
-            id: item.producto.toString(),
-            title: item.nombre,
-            quantity: item.cantidad,
-            unit_price: item.precio,
-            currency_id: 'ARS',
-            picture_url: item.imagen,
-            description: item.nombre,
-        }));
-        if (order.shippingCost > 0) {
-            items.push({
-                id: 'shipping',
-                title: 'Costo de Envío',
-                quantity: 1,
-                unit_price: order.shippingCost,
-                currency_id: 'ARS',
-                description: 'Costo de envío'
-            });
-        }
-        const preferenceBody = {
-            items: items,
-            payer: {
-                name: order.customerInfo.nombre.split(' ')[0],
-                surname: order.customerInfo.nombre.split(' ').slice(1).join(' ') || order.customerInfo.nombre,
-                email: order.customerInfo.email,
-            },
-            back_urls: {
-                success: `${frontendURL}/orden/${orderId}`,
-                failure: `${frontendURL}/orden/${orderId}`,
-                pending: `${frontendURL}/orden/${orderId}`
-            },
-            external_reference: orderId,
-            notification_url: `${backendURL}/api/orders/webhook/mercadopago`
-        };
-        console.log('Creando preferencia de MercadoPago...');
-        const result = await preference.create({ body: preferenceBody });
-        res.json({
-            id: result.id,
-            init_point: result.init_point
-        });
-    } catch (error) {
-        console.error('Error al crear preferencia de MercadoPago:', error);
-        if (error.response && error.response.data) {
-            console.error('Detalle del error de MP:', error.response.data);
-            return res.status(500).json({
-                msg: 'Error del servidor de MercadoPago',
-                error: error.response.data
-            });
-        }
-        res.status(500).json({
-            msg: 'Error en el servidor al crear preferencia',
-            error: error.message
-        });
-    }
-};
 
-export const receiveMercadoPagoWebhook = async (req, res) => {
-    console.log('[MP Webhook] Notificación recibida.');
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    try {
-        const client = new MercadoPagoConfig({
-            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN
-        });
-        let paymentDetails = null;
-        let paymentId = null;
-        if (req.body.type === 'payment') {
-            paymentId = req.body.data.id;
-            console.log(`[MP Webhook] Recibido 'type: payment' con ID: ${paymentId}`);
-            const payment = new Payment(client);
-            paymentDetails = await payment.get({ id: paymentId });
-        } else if (req.body.topic === 'merchant_order') {
-            const merchantOrderId = req.body.resource.split('/').pop();
-            console.log(`[MP Webhook] Recibido 'topic: merchant_order' con ID: ${merchantOrderId}`);
-            const merchantOrder = new MerchantOrder(client);
-            const orderInfo = await merchantOrder.get({ merchantOrderId });
-            if (orderInfo.payments && orderInfo.payments.length > 0) {
-                const lastPaymentInfo = orderInfo.payments[orderInfo.payments.length - 1];
-                paymentId = lastPaymentInfo.id;
-                console.log(`[MP Webhook] MerchantOrder contenía Payment ID: ${paymentId}`);
-                const payment = new Payment(client);
-                paymentDetails = await payment.get({ id: paymentId });
-            } else {
-                console.log(`[MP Webhook] MerchantOrder ${merchantOrderId} no contenía pagos.`);
-            }
-        } else {
-            console.log(`[MP Webhook] Evento ignorado: tipo '${req.body.type}' y tópico '${req.body.topic}' desconocidos.`);
-            return res.status(200).send('Evento no reconocido.');
-        }
-        if (!paymentDetails) {
-            console.log('[MP Webhook] No se pudieron obtener detalles del pago.');
-            return res.status(200).send('Sin detalles de pago para procesar.');
-        }
-        console.log(`[MP Webhook] Estado del pago: ${paymentDetails.status}`);
-        console.log(`[MP Webhook] External Reference (Order ID): ${paymentDetails.external_reference}`);
-        const orderId = paymentDetails.external_reference;
-        const paymentStatus = paymentDetails.status;
-        if (!orderId) {
-            console.log('[MP Webhook] Error: El pago no tiene external_reference (Order ID).');
-            return res.status(400).send('Pago sin external_reference.');
-        }
-        const order = await Order.findById(orderId);
-        if (!order) {
-            console.log(`[MP Webhook] Error: Orden ${orderId} no encontrada en la BD.`);
-            return res.status(404).send('Orden no encontrada.');
-        }
-        if (order.status === 'completada') {
-            console.log(`[MP Webhook] Orden ${orderId} ya estaba 'completada'. Ignorando.`);
-            return res.status(200).send('Orden ya procesada.');
-        }
-        if (paymentStatus === 'approved') {
-            console.log(`[MP Webhook] Pago 'approved' para Orden ${orderId}. Actualizando stock...`);
-            const productsToUpdate = order.items.map(item => ({
-                updateOne: {
-                    filter: { _id: item.producto },
-                    update: {
-                        $inc: { stockComprometido: -item.cantidad }
-                    }
-                }
-            }));
-            const session = await mongoose.startSession();
-            session.startTransaction();
-            try {
-                await Product.bulkWrite(productsToUpdate, { session });
-                order.status = 'completada';
-                order.paidAt = new Date(paymentDetails.date_approved);
-                order.paymentResult = {
-                    id: paymentDetails.id,
-                    status: paymentDetails.status,
-                    update_time: paymentDetails.date_updated,
-                    email_address: paymentDetails.payer.email
-                };
-                await order.save({ session });
-                await session.commitTransaction();
-                console.log(`[MP Webhook] ¡ÉXITO! Orden ${orderId} actualizada a 'completada' y stock liberado.`);
-            } catch (dbError) {
-                await session.abortTransaction();
-                console.error(`[MP Webhook] Error de BD al actualizar orden ${orderId}:`, dbError);
-                return res.status(500).send('Error interno al actualizar la orden.');
-            } finally {
-                session.endSession();
-            }
-        } else {
-            console.log(`[MP Webhook] Estado de pago no 'approved' (${paymentStatus}). No se actualiza orden.`);
-        }
-        res.status(200).send('Webhook recibido exitosamente.');
-    } catch (error) {
-        console.error('--- ERROR en Webhook de MercadoPago ---', error);
-        if (error.response && error.response.data) {
-            console.error('Detalle del error de API MP:', error.response.data);
-        }
-        res.status(500).json({ msg: 'Error en el servidor al procesar webhook', error: error.message });
-    }
-};
 
 export const getAllOrders = async (req, res) => {
     try {
@@ -466,9 +300,8 @@ export const createManualOrder = async (req, res) => {
             if (!product) {
                 throw new Error(`Producto ${item.producto} no encontrado.`);
             }
-            const stockDisponible = product.stock - product.stockComprometido;
-            if (stockDisponible < item.cantidad) {
-                throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${stockDisponible} unidades disponibles.`);
+            if (product.stock < item.cantidad) {
+                throw new Error(`Stock insuficiente para ${product.nombre}. Solo quedan ${product.stock} unidades disponibles.`);
             }
             const price = item.precio || product.precio;
             calculatedSubtotal += item.cantidad * price;
@@ -477,8 +310,7 @@ export const createManualOrder = async (req, res) => {
                     filter: { _id: product._id },
                     update: {
                         $inc: {
-                            stock: -item.cantidad,
-                            stockComprometido: item.cantidad
+                            stock: -item.cantidad
                         }
                     }
                 }
@@ -508,17 +340,12 @@ export const createManualOrder = async (req, res) => {
 
         if (status === 'completada') {
             order.paidAt = new Date();
-            const productsToRelease = items.map(item => ({
-                updateOne: {
-                    filter: { _id: item.producto },
-                    update: {
-                        $inc: { stockComprometido: -item.cantidad }
-                    }
-                }
-            }));
-            // --- CAMBIO ---
-            await Product.bulkWrite(productsToRelease); // Sin { session }
-            // --- FIN CAMBIO ---
+            // Eliminada logica de stockComprometido
+            // Como ya descontamos el stock al "reservar" (productosToUpdate), no hacemos nada extra al completar
+            // salvo marcar como pagado.
+            // Si antes liberabas comprometido, ahora ya no hace falta.
+            order.status = 'completada';
+            order.paidAt = new Date();
         }
 
         // --- CAMBIO ---
@@ -603,14 +430,8 @@ export const updateOrderStatus = async (req, res) => {
         let productsToUpdate = [];
 
         if (status === 'completada') {
-            productsToUpdate = order.items.map(item => ({
-                updateOne: {
-                    filter: { _id: item.producto },
-                    update: {
-                        $inc: { stockComprometido: -item.cantidad }
-                    }
-                }
-            }));
+            // Ya no hay 'stockComprometido' que liberar. El stock se descontó al crear la orden.
+            // Solo actualizamos el estado.
             order.status = 'completada';
             order.paidAt = new Date();
             order.paymentMethod = order.paymentMethod || 'Manual';
@@ -621,8 +442,8 @@ export const updateOrderStatus = async (req, res) => {
                     filter: { _id: item.producto },
                     update: {
                         $inc: {
-                            stock: item.cantidad,
-                            stockComprometido: -item.cantidad
+                            stock: item.cantidad
+                            // stockComprometido ya no existe
                         }
                     }
                 }
@@ -651,8 +472,52 @@ export const updateOrderStatus = async (req, res) => {
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
     }
     // --- CAMBIO ---
-    // finally {
     //     session.endSession(); // Eliminado
     // }
     // --- FIN CAMBIO ---
+};
+
+// @desc    Disparador manual/cron para resumen de demanda (RF-003)
+// @route   POST /api/orders/summary-trigger
+// @access  Private/Admin (o protegido por API Key si es externo)
+export const triggerDemandSummary = async (req, res) => {
+    try {
+        const { date } = req.body; // Fecha de entrega opcional, o usamos "próximo cierre"
+
+        // Logica simplificada: Si no pasan fecha, buscamos órdenes 'Bajo Demanda' pendientes de entrega
+        // O buscamos las del próximo cierre estipulado.
+        // Para simplificar RF-003, traeremos todas las ordenes con statusBajoDemanda != 'entregado'
+        // y que tengan fechaEntregaBajoDemanda igual a la fecha pasada.
+
+        if (!date) {
+            return res.status(400).json({ msg: 'Se requiere la fecha de entrega (YYYY-MM-DD) para generar el reporte.' });
+        }
+
+        const targetDate = new Date(date);
+        // Ajustar a inicio y fin del dia
+        const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+        const orders = await Order.find({
+            // statusBajoDemanda: { $ne: 'n/a' }, // Solo bajo demanda
+            // status: 'completada', // Solo pagadas? O todas? RF dice "solicitados", asumiremos todas las confirmadas/pendientes de pago tambien sirven para producir
+            // Mejor filtrar por fechaEntregaBajoDemanda dentro del rango
+            fechaEntregaBajoDemanda: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            }
+        });
+
+        if (orders.length === 0) {
+            return res.status(404).json({ msg: 'No se encontraron pedidos bajo demanda para esa fecha.' });
+        }
+
+        await sendDemandSummary(orders, startOfDay);
+
+        res.json({ msg: `Resumen enviado. ${orders.length} ordenes procesadas.` });
+
+    } catch (error) {
+        console.error('Error al generar resumen:', error);
+        res.status(500).json({ msg: 'Error de servidor', error: error.message });
+    }
 };
