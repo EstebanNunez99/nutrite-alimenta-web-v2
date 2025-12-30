@@ -3,21 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true para 465, false para otros puertos (587, 25)
+    service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    pool: true, // Usa una conexión persistente para enviar varios correos (Admin + Cliente)
-    maxConnections: 1,
-    connectionTimeout: 10000, // 10 segundos de espera para conectar
-    greetingTimeout: 10000,   // 10 segundos de espera para el saludo SMTP
-    socketTimeout: 15000,     // 15 segundos de inactividad del socket
-    tls: {
-        rejectUnauthorized: false // Ayuda si hay problemas con certificados en el proxy de Render
-    }
+    // Fix común para servidores Cloud: Forzar IPv4
+    family: 4
 });
 
 /**
