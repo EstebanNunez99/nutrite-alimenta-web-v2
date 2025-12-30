@@ -9,6 +9,14 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    pool: true, // Usa una conexión persistente para enviar varios correos (Admin + Cliente)
+    maxConnections: 1,
+    connectionTimeout: 10000, // 10 segundos de espera para conectar
+    greetingTimeout: 10000,   // 10 segundos de espera para el saludo SMTP
+    socketTimeout: 15000,     // 15 segundos de inactividad del socket
+    tls: {
+        rejectUnauthorized: false // Ayuda si hay problemas con certificados en el proxy de Render
     }
 });
 
