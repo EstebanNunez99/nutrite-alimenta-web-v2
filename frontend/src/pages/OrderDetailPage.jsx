@@ -10,12 +10,16 @@ import { toast } from 'react-toastify';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import useDocumentTitle from '../hooks/useDocumentTitle'
+import { useAuth } from '../context/AuthContext'; // Importamos useAuth
+// --- CAMBIO ---
+import { updateDeliveryStatus, updateSplitDeliveryStatus } from '../services/orderService';
+// --- FIN CAMBIO ---
 
 const OrderDetailPage = () => {
     useDocumentTitle('Detalle del pedido')
     const { id: orderId } = useParams();
     // --- CAMBIO ---
-    // const { usuario } = useAuth(); // <-- Eliminado
+    const { usuario } = useAuth(); // Obtenemos el usuario autenticado
     // --- FIN CAMBIO ---
 
     const [order, setOrder] = useState(null);
@@ -74,6 +78,37 @@ const OrderDetailPage = () => {
             if (interval) clearInterval(interval);
         };
     }, [orderId]);
+
+    // --- CAMBIO: Handlers para Admin ---
+    const handleDeliveryStatusChange = async (newStatus) => {
+        try {
+            await updateDeliveryStatus(orderId, newStatus);
+            toast.success('Estado de entrega actualizado');
+            // Recargar orden
+            const updated = await getOrderById(orderId);
+            setOrder(updated);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al actualizar');
+        }
+    };
+
+    const handleSplitStatusChange = async (type, newStatus) => {
+        try {
+            await updateSplitDeliveryStatus(
+                orderId,
+                type === 'inmediato' ? newStatus : undefined,
+                type === 'demanda' ? newStatus : undefined
+            );
+            toast.success('Estado actualizado');
+            const updated = await getOrderById(orderId);
+            setOrder(updated);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al actualizar');
+        }
+    };
+    // --- FIN CAMBIO ---
 
 
 
@@ -222,6 +257,19 @@ const OrderDetailPage = () => {
                                         <div style={{ fontSize: '0.85em', color: '#666', marginTop: '2px' }}>
                                             (Fecha Estimada: {new Date(order.fechaEntregaInmediato || order.createdAt).toLocaleDateString()})
                                         </div>
+                                        {/* ADMIN CONTROLS */}
+                                        {usuario && usuario.rol === 'admin' && (
+                                            <div style={{ marginTop: '5px' }}>
+                                                <select
+                                                    value={order.statusInmediato}
+                                                    onChange={(e) => handleSplitStatusChange('inmediato', e.target.value)}
+                                                    style={{ padding: '2px', fontSize: '0.9rem' }}
+                                                >
+                                                    <option value="pendiente">Pendiente</option>
+                                                    <option value="entregado">Entregado</option>
+                                                </select>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -238,6 +286,19 @@ const OrderDetailPage = () => {
                                         <div style={{ fontSize: '0.85em', color: '#666', marginTop: '2px' }}>
                                             (Fecha Estimada: {new Date(order.fechaEntregaBajoDemanda).toLocaleDateString()})
                                         </div>
+                                        {/* ADMIN CONTROLS */}
+                                        {usuario && usuario.rol === 'admin' && (
+                                            <div style={{ marginTop: '5px' }}>
+                                                <select
+                                                    value={order.statusBajoDemanda}
+                                                    onChange={(e) => handleSplitStatusChange('demanda', e.target.value)}
+                                                    style={{ padding: '2px', fontSize: '0.9rem' }}
+                                                >
+                                                    <option value="pendiente">Pendiente</option>
+                                                    <option value="entregado">Entregado</option>
+                                                </select>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -268,6 +329,20 @@ const OrderDetailPage = () => {
                                             </span>
                                         )}
                                     </p>
+                                )}
+                                {/* ADMIN CONTROLS FOR UNIFIED */}
+                                {usuario && usuario.rol === 'admin' && (
+                                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #ccc' }}>
+                                        <small>Admin: Actualizar Estado Global</small><br />
+                                        <select
+                                            value={order.deliveryStatus}
+                                            onChange={(e) => handleDeliveryStatusChange(e.target.value)}
+                                            style={{ marginTop: '5px' }}
+                                        >
+                                            <option value="no_enviado">No Enviado</option>
+                                            <option value="entregado">Entregado</option>
+                                        </select>
+                                    </div>
                                 )}
                             </div>
                         )}

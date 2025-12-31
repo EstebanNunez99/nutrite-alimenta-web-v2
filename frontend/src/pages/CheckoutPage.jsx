@@ -268,11 +268,13 @@ const CheckoutPage = () => {
                                 <h4 className="mt-2">Opciones de Envío Mixto:</h4>
                                 <label className={styles.radioOption}>
                                     <input type="radio" name="shippingType" value="unificado" checked={shippingType === 'unificado'} onChange={(e) => setShippingType(e.target.value)} />
-                                    <strong>Unificado:</strong> Recibir todo junto el {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'día seleccionado'} (1 Envío a pagar).
+                                    <strong>Envio unificado:</strong> Recibir todo junto el {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'día seleccionado'} (1 Envío a pagar).
                                 </label>
+                                <br />
+                                <br />
                                 <label className={styles.radioOption}>
                                     <input type="radio" name="shippingType" value="desglosado" checked={shippingType === 'desglosado'} onChange={(e) => setShippingType(e.target.value)} />
-                                    <strong>Desglosado:</strong> Recibir productos en stock YA, y bajo demanda después. (⚠ Se abonarán 2 envíos).
+                                    <strong>Envio por separado:</strong> Recibir productos en stock YA, y producto bajo demanda el día correspondiente. (⚠ Se abonarán 2 envíos).
                                 </label>
                             </div>
                         )}

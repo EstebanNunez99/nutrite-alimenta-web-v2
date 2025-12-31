@@ -284,6 +284,11 @@ const AdminSalesHistoryPage = () => {
                                             <span className={`${styles.badge} ${statusBadge.class}`}>
                                                 {statusBadge.label}
                                             </span>
+                                            {/* Mostrar Medio de Pago */}
+                                            <div style={{ fontSize: '0.85rem', marginTop: '4px', color: '#555' }}>
+                                                {order.paymentMethod}
+                                            </div>
+
                                             {/* --- CAMBIO: Selector de estado de pago --- */}
                                             {order.status === 'pendiente' && (
                                                 <select
@@ -321,8 +326,6 @@ const AdminSalesHistoryPage = () => {
                                                                     disabled={order.status !== 'completada'}
                                                                 >
                                                                     <option value="pendiente">Pendiente</option>
-                                                                    <option value="listo">Listo</option>
-                                                                    <option value="enviado">Enviado</option>
                                                                     <option value="entregado">Entregado</option>
                                                                 </select>
                                                             </div>
@@ -339,8 +342,6 @@ const AdminSalesHistoryPage = () => {
                                                                     disabled={order.status !== 'completada'}
                                                                 >
                                                                     <option value="pendiente">Pendiente</option>
-                                                                    <option value="listo">Listo</option>
-                                                                    <option value="enviado">Enviado</option>
                                                                     <option value="entregado">Entregado</option>
                                                                 </select>
                                                             </div>
@@ -360,8 +361,6 @@ const AdminSalesHistoryPage = () => {
                                                                     disabled={order.status !== 'completada'}
                                                                 >
                                                                     <option value="pendiente">Pendiente</option>
-                                                                    <option value="listo">Listo</option>
-                                                                    <option value="enviado">Enviado</option>
                                                                     <option value="entregado">Entregado</option>
                                                                 </select>
                                                             </>
@@ -374,7 +373,6 @@ const AdminSalesHistoryPage = () => {
                                                                 disabled={order.status !== 'completada'}
                                                             >
                                                                 <option value="no_enviado">Pendiente</option>
-                                                                <option value="enviado">Enviado</option>
                                                                 <option value="entregado">Entregado</option>
                                                             </select>
                                                         )}
