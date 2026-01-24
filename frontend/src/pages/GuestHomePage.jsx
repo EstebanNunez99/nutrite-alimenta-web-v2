@@ -40,68 +40,66 @@ const GuestHomePage = () => {
     }, []);
 
     const carouselProducts = products.length > 0 ? products.slice(0, Math.min(7, products.length)) : [];
-    const spotlightProduct = products.length > 7 ? products[7] : (products.length > 0 ? products[products.length - 1] : null);
 
     return (
-        <>
+        <div className={styles.pageContainer}>
+            {/* HERO SECTION REDISEÑADA */}
             <section className={styles.hero}>
-                <div className={styles.heroContent}>
-                    <h1 className={styles.title}>Somos Nutrirte Alimenta</h1>
-                    <p className={styles.subtitle}>Descubre productos saludables de alta calidad y con un sabor irrsistible.</p>
-                    <div className={styles.buttonContainer}>
+                <div className={styles.heroGrid}>
+                    {/* IZQUIERDA: LOGO GRANDE */}
+                    <div className={styles.heroLeft}>
+                        <img
+                            src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png"
+                            alt="Nutrirte Alimenta Logo"
+                            className={styles.heroLogo}
+                        />
+                    </div>
+
+                    {/* DERECHA: TEXTO LEYENDA */}
+                    <div className={styles.heroRight}>
+                        <span className={styles.badge}>DIFRUTÁ LO NATURAL</span>
+                        <h1 className={styles.title}>
+                            EL SABOR DE LO<br />
+                            SALUDABLE
+                        </h1>
+                        <p className={styles.subtitle}>
+                            Disfrutamos de brindar una experiencia gastronómica única, donde calidad, sabor y salud se unen.
+                            Gracias a nuestros clientes, seguimos creciendo día a día.
+                            ¡Elegí lo saludable!
+                        </p>
                         <Link to="/productos">
-                            <Button variant='primary'>Explorar Catálogo</Button>
+                            <Button variant='primary' size="large">VER CATÁLOGO</Button>
                         </Link>
-                        {/* --- CAMBIO --- */}
-                        {/* Eliminamos el botón de Iniciar Sesión / Registrarse */}
-                        {/* --- FIN CAMBIO --- */}
                     </div>
                 </div>
             </section>
-            
-            {loading ? <Spinner /> : (
-                <>
-                    <section className={styles.carouselSection}>
-                        <h2 className={styles.sectionTitle}>Novedades</h2>
-                        <Swiper
-                            modules={[Navigation, Pagination, Autoplay]}
-                            spaceBetween={30}
-                            slidesPerView={1}
-                            navigation
-                            pagination={{ clickable: true }}
-                            autoplay={{ delay: 3000, disableOnInteraction: false }}
-                            breakpoints={{
-                                640: { slidesPerView: 2 },
-                                768: { slidesPerView: 3 },
-                                1024: { slidesPerView: 4 },
-                            }}
-                        >
-                            {carouselProducts.map(product => (
-                                <SwiperSlide key={product._id}>
-                                    <ProductCard product={product} />
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </section>
 
-                    {spotlightProduct && (
-                        <section className={styles.spotlightSection}>
-                           <div className={styles.spotlightGrid}>
-                                <img src={spotlightProduct.imagen} alt={spotlightProduct.nombre} className={styles.spotlightImage} />
-                                <div className={styles.spotlightContent}>
-                                    <span className={styles.spotlightTag}>Destacado de la Semana</span>
-                                    <h2 className={styles.spotlightTitle}>{spotlightProduct.nombre}</h2>
-                                    <p className={styles.spotlightDescription}>{spotlightProduct.descripcion.substring(0, 150)}...</p>
-                                    <Link to={`/producto/${spotlightProduct._id}`}>
-                                        <Button variant="primary" size="large">Lo Quiero</Button>
-                                    </Link>
-                                </div>
-                            </div>
-                        </section>
-                    )}
-                </>
+            {/* NOVEDADES / CARRUSEL */}
+            {loading ? <Spinner /> : (
+                <section className={styles.carouselSection}>
+                    <h2 className={styles.sectionTitle}>Novedades</h2>
+                    <Swiper
+                        modules={[Navigation, Pagination, Autoplay]}
+                        spaceBetween={30}
+                        slidesPerView={1}
+                        navigation
+                        pagination={{ clickable: true }}
+                        autoplay={{ delay: 3000, disableOnInteraction: false }}
+                        breakpoints={{
+                            640: { slidesPerView: 2 },
+                            768: { slidesPerView: 3 },
+                            1024: { slidesPerView: 4 },
+                        }}
+                    >
+                        {carouselProducts.map(product => (
+                            <SwiperSlide key={product._id}>
+                                <ProductCard product={product} />
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                </section>
             )}
-        </>
+        </div>
     );
 };
 

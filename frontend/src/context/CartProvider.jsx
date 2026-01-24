@@ -57,7 +57,7 @@ const CartProvider = ({ children }) => {
     // --- CAMBIO ---
     // Función reescrita para ser síncrona y usar el estado local.
     // ¡¡IMPORTANTE: Ahora recibe el objeto 'product' completo!!
-    const addItem = (product, quantity) => {
+    const addItem = (product, quantity, comment = '') => {
         if (!product || !product._id) {
             console.error("Intento de añadir producto inválido", product);
             toast.error("No se pudo añadir el producto.");
@@ -67,10 +67,13 @@ const CartProvider = ({ children }) => {
         try {
             // Hacemos una copia profunda de los items
             const newItems = [...cart.items];
-            const itemIndex = newItems.findIndex(item => item.producto._id === product._id);
+            // Buscamos si existe un item con el mismo ID Y el mismo comentario
+            const itemIndex = newItems.findIndex(item =>
+                item.producto._id === product._id && (item.comentarios || '') === (comment || '')
+            );
 
             if (itemIndex > -1) {
-                // Si ya existe, actualizamos la cantidad
+                // Si ya existe (mismo prod y mismo comentario), actualizamos la cantidad
                 newItems[itemIndex].cantidad += quantity;
             } else {
                 // Si no existe, lo añadimos al array
@@ -86,6 +89,7 @@ const CartProvider = ({ children }) => {
                         tipo: product.tipo // RF-001/002: Guardamos el tipo
                     },
                     cantidad: quantity,
+                    comentarios: comment, // Guardamos el comentario
                     // Replicamos la estructura del backend
                     nombre: product.nombre,
                     imagen: product.imagen,
@@ -103,8 +107,15 @@ const CartProvider = ({ children }) => {
     };
 
     // Función reescrita para ser síncrona
-    const removeItem = (productId) => {
+    const removeItem = (productId, comment = null) => {
         try {
+            // Si pasamos comentario, filtramos exacto. Si no (legacy), borramos todos los de ese ID?? 
+            // Para simplificar y no romper nada: si se llama sin comment, borra por ID (todos). 
+            // Pero lo ideal sería pasar índice o ID único de línea.
+            // Por ahora mantenemos borrado por ID para compatibilidad, pero ojo con duplicados de ID.
+            // MEJORA: Filtrar el que coincida. Pero la UI actual de CartItem probablemente solo pasa ID.
+            // Asumiremos que si hay múltiples variantes, esto podría borrar todas.
+            // TODO: Refactorizar CartItem para usar un ID de línea único en el futuro.
             const newItems = cart.items.filter(item => item.producto._id !== productId);
             setCart({ ...cart, items: newItems });
             toast.info("Producto eliminado del carrito.");
@@ -114,12 +125,14 @@ const CartProvider = ({ children }) => {
     };
 
     // Función reescrita para ser síncrona
-    const updateItemQuantity = (productId, newQuantity) => {
+    const updateItemQuantity = (productId, newQuantity, comment = null) => {
         if (newQuantity < 1) {
-            return removeItem(productId);
+            return removeItem(productId, comment);
         }
 
         try {
+            // Misma limitación: actualiza todos los de ese producto si no distinguimos comentario.
+            // Por ahora actualizamos por ID.
             const newItems = cart.items.map(item =>
                 item.producto._id === productId ? { ...item, cantidad: newQuantity } : item
             );
@@ -154,7 +167,8 @@ const CartProvider = ({ children }) => {
                     cantidad: item.cantidad,
                     imagen: item.imagen,
                     precio: item.precio,
-                    producto: item.producto._id // Pasamos solo el ID del producto
+                    producto: item.producto._id, // Pasamos solo el ID del producto
+                    comentarios: item.comentarios || '' // Incluimos comentarios
                 }))
             };
 

@@ -1,23 +1,55 @@
-.aviso {
-    text-align: center;
-    color: #d9534f;
-    border: 2px solid #d9534f;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 1.5rem; /* Espacio antes del botón de crear */
-}
+/* AboutAtPage.module.css - Rediseño */
 
 .aboutAt {
-    /* 1. Corrección de sintaxis (sin comillas) */
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente (porque la dirección es columna) */
-    align-items: center;     /* Centra horizontalmente (porque la dirección es columna) */
-    text-align: center;      /* Asegura que el texto dentro de los hijos también se centre */
-    height: 80vh;            /* 80% de la altura de la pantalla */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 80vh;
+    /* Usar min-height para evitar cortes */
+    padding: 4rem 2rem;
+    background-color: var(--color-fondo);
+    color: var(--color-texto-terciario);
+    /* Texto claro sobre fondo oscuro */
+    width: 100%;
+    /* Ocupar ancho completo */
+    box-sizing: border-box;
+}
 
-    /* 2. Añadido para centrar el contenedor (que tiene 80% de ancho) */
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
+.aboutAt h1,
+.aboutAt h2 {
+    font-family: var(--fuente-titulos);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+.aboutAt h1 {
+    font-size: 3rem;
+    color: white;
+}
+
+.aboutAt h2 {
+    font-size: 2rem;
+    color: var(--color-principal-claro);
+    margin-bottom: 2rem;
+}
+
+.aboutAt p {
+    font-family: var(--fuente-principal);
+    max-width: 800px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.aviso {
+    background-color: rgba(231, 76, 60, 0.1);
+    /* Fondo rojo transparente */
+    color: #ffcccc;
+    border: 1px solid var(--color-peligro);
+    padding: 1rem;
+    border-radius: var(--borde-radio);
+    margin-bottom: 2rem;
+    max-width: 800px;
 }

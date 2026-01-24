@@ -1,0 +1,240 @@
+/* ProductDetailModal.module.css */
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+    backdrop-filter: blur(2px);
+}
+
+.modal {
+    background-color: white;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    /* Para que no se pase del alto de pantalla */
+    border-radius: 16px;
+    overflow: hidden;
+    /* Para que la imagen respete el borde */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
+    position: relative;
+    margin: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* HEADER / IMAGE */
+.imageContainer {
+    width: 100%;
+    height: 250px;
+    position: relative;
+    background-color: #f0f0f0;
+    flex-shrink: 0;
+}
+
+.productImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.closeButton {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    /* Según referencia parece estar a la izquierda o derecha, lo pondré izquierda como 'back' */
+    background-color: white;
+    color: #333;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 1.2rem;
+    z-index: 10;
+    transition: transform 0.2s;
+}
+
+.closeButton:hover {
+    transform: scale(1.1);
+}
+
+/* CONTENT SCROLLABLE */
+.content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-texto-principal);
+    margin: 0;
+    flex: 1;
+}
+
+.price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-principal);
+    margin-left: 1rem;
+    white-space: nowrap;
+}
+
+.description {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+/* QUANTITY SECTION */
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: #444;
+}
+
+.quantityControl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.qtyBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.qtyBtn:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.qtyBtn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.quantity {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* COMMENTS */
+.commentsContainer {
+    margin-bottom: 1rem;
+}
+
+.commentsInput {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+    background-color: #fafafa;
+}
+
+.commentsInput:focus {
+    outline: none;
+    border-color: var(--color-principal);
+    background-color: white;
+}
+
+/* FOOTER ACTIONS */
+.footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #eee;
+    background-color: white;
+}
+
+.addButton {
+    width: 100%;
+    background-color: var(--color-principal);
+    /* Naranja marca */
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    /* Botones más redondeados o cuadrados según ref */
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s;
+    border-radius: 50px;
+    /* Pill shape según referencia 2 */
+}
+
+.addButton:hover {
+    background-color: var(--color-principal-claro);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(160, 82, 45, 0.3);
+}
+
+.btnPrice {
+    font-weight: 700;
+}

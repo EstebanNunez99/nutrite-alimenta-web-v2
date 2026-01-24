@@ -2,15 +2,15 @@
 // src/features/products/ProductCard.jsx
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // Desactivamos links directos
 import styles from './ProductCard.module.css';
-import Button from '../../components/ui/Button'; // Asegúrate de que la ruta sea correcta
 import { useCart } from '../../hooks/useCart.js';
+import { FaCartPlus, FaBan } from 'react-icons/fa';
 
-const ProductCard = ({ product }) => {
-    // URL de imagen por defecto si el producto no tiene una
-    // Usamos una imagen más genérica y profesional como fallback
+const ProductCard = ({ product, onClick }) => {
 
+    // El modal se encargará de añadir al carrito, pero dejamos esto por si se quisiera usar
+    // el botón pequeño directo. Para el diseño "Menu", suele ser mejor que todo abra el modal.
     const { addItem } = useCart();
     const imageUrl = product.imagen || 'https://via.placeholder.com/400x400/f0f0f0/cccccc?text=Producto+Sin+Imagen';
 
@@ -18,61 +18,67 @@ const ProductCard = ({ product }) => {
     const formattedPrice = new Intl.NumberFormat('es-AR', {
         style: 'currency',
         currency: 'ARS',
-        minimumFractionDigits: 2, // Asegura dos decimales
-        maximumFractionDigits: 2,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(product.precio);
 
-    const handleAddToCart = (e) => {
-        e.preventDefault(); // Evita que el clic se propague al Link de la imagen/título
-        e.stopPropagation();
+    // Handler local para clicks en la tarjeta
+    const handleCardClick = (e) => {
+        if (onClick) {
+            e.preventDefault();
+            onClick(product);
+        }
+    };
+
+    // Handler para botón de añadir directo (opcional, si se quiere mantener)
+    const handleQuickAdd = (e) => {
+        e.stopPropagation(); // Para que no abra el modal
         addItem(product, 1);
     };
 
     const isBajoDemanda = product.tipo === 'bajo_demanda';
     const stockReal = product.stock;
-    // Si es bajo demanda, siempre hay stock (o no se controla por stock físico inmediato)
     const hayStock = isBajoDemanda || stockReal > 0;
 
     return (
-        <div className={styles.card}>
-            {/* 1. La imagen ahora es un link y tiene su propio contenedor para efectos */}
-            <Link to={`/producto/${product._id}`} className={styles.imageContainer}>
-                <img src={imageUrl} alt={product.nombre} className={styles.cardImage} />
-            </Link>
+        <article className={styles.card} onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+            <div className={styles.cardContent}>
+                <div className={styles.cardHeader}>
+                    {/* Usamos h3 y p normales, ya no links */}
+                    <h3 className={styles.cardTitle}>{product.nombre}</h3>
 
-            <div className={styles.cardBody}>
-                {/* 2. El título también es un link */}
-                <h3 className={styles.cardTitle}>
-                    <Link to={`/producto/${product._id}`}>{product.nombre}</Link>
-                </h3>
-
-                <div className={hayStock ? styles.enStock : styles.stockAgotado}>
-                    <p> Estado:
-                        <span>
-                            {isBajoDemanda ? 'Bajo Demanda' : (hayStock ? 'En Stock' : 'Agotado')}
-                        </span>
+                    {/* Asumimos que existe descripcion, si no, mostramos un fallback o nada. 
+                        En el modelo real deberíamos verificar si el backend lo devuelve */}
+                    <p className={styles.cardDescription}>
+                        {product.descripcion || product.ingredientes || 'Delicioso y fresco.'}
                     </p>
                 </div>
-                {/* 3. Estilo de precio */}
-                <p className={styles.cardPrice}>{formattedPrice}</p>
 
-                {/* 4. El botón ahora tiene la clase correcta para el estilo */}
-                <div className={styles.cardButtons}>
-                    <Link to={`/producto/${product._id}`}>
-                        <Button variant='secondary' style={{ width: '100%', marginBottom: '1rem' }} >Ver Detalles</Button>
-                        <Button
-                            variant={hayStock ? 'primary' : 'disabled'}
-                            onClick={handleAddToCart}
-                            disabled={!hayStock}
-                            style={{ width: '100%' }}
+                <div className={styles.cardFooter}>
+                    <div className={styles.priceContainer}>
+                        <span className={styles.cardPrice}>{formattedPrice}</span>
+                        <span className={styles.taxInfo}>Sin impuestos nacionales</span>
+                    </div>
 
-                        >
-                            {hayStock ? 'Añadir al Carrito' : 'Agotado'}
-                        </Button>
-                    </Link>
+                    {/* El botón pequeño aún puede funcionar para añadir 1 rápido, o quitarse si se prefiere solo modal */}
+                    <button
+                        className={`${styles.addButton} ${!hayStock ? styles.disabledButton : ''}`}
+                        onClick={handleQuickAdd}
+                        disabled={!hayStock}
+                        title={hayStock ? "Agregar 1 al carrito" : "Sin stock"}
+                    >
+                        {hayStock ? <FaCartPlus /> : <FaBan />}
+                    </button>
                 </div>
             </div>
-        </div>
+
+            <div className={styles.imageLink}> {/* Ya no es Link */}
+                <div className={styles.imageContainer}>
+                    <img src={imageUrl} alt={product.nombre} className={styles.cardImage} />
+                    {!hayStock && <span className={styles.badgeAgotado}>Agotado</span>}
+                </div>
+            </div>
+        </article>
     );
 };
 

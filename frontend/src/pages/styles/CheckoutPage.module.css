@@ -1,66 +1,109 @@
-/* CheckoutPage.module.css */
+/* CheckoutPage.module.css - Rediseño Global */
 
 .pageContainer {
     max-width: 1100px;
     margin: 2rem auto;
     padding: 2rem;
+    min-height: 80vh;
 }
 
-.pageContainer h2 {
+/* Headings */
+.pageContainer h2,
+.formTitle {
     text-align: center;
     margin-top: 0;
     margin-bottom: 2.5rem;
-    color: #333;
+    color: var(--color-texto-terciario);
+    /* Texto claro porque el fondo es oscuro */
+    font-family: var(--fuente-titulos);
+    font-size: 2.5rem;
+    font-weight: 700;
 }
+
+.formTitle {
+    /* Específico para OrderTracking si usa esta clase */
+    margin-bottom: 2rem;
+}
+
 
 /* --- La grilla principal de 2 columnas --- */
 .checkoutGrid {
     display: grid;
-    grid-template-columns: 1fr; /* 1 columna en móvil */
+    grid-template-columns: 1fr;
     gap: 2rem;
 }
 
-/* A partir de 992px, pasamos a 2 columnas */
 @media (min-width: 992px) {
     .checkoutGrid {
-        grid-template-columns: 2fr 1fr; /* El formulario es más ancho que el resumen */
+        grid-template-columns: 2fr 1fr;
     }
 }
+
 .aviso {
     text-align: center;
-    color: #d9534f;
-    border: 2px solid #d9534f;
-    padding: 0.5rem;
-    border-radius: 4px;
-    margin-bottom: 1.5rem; /* Espacio antes del botón de crear */
+    background-color: rgba(217, 83, 79, 0.1);
+    color: #ffdada;
+    border: 1px solid #d9534f;
+    padding: 0.8rem;
+    border-radius: var(--borde-radio);
+    margin-bottom: 1.5rem;
 }
 
-/* --- Estilo de "Tarjeta" para cada sección --- */
+/* --- Estilo de "Tarjeta" --- */
 .shippingForm,
-.orderSummary {
-    background-color: #fff;
+.orderSummary,
+.form {
+    /* Agregado .form para OrderTrackingContainer */
+    background-color: var(--color-superficie);
+    /* #e9e9e9 (Gris claro/blanco) */
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e7e7e7;
+    border-radius: var(--borde-radio);
+    box-shadow: var(--sombra-suave);
+    border: none;
+    color: var(--color-texto-principal);
+    /* Texto oscuro dentro de las tarjetas */
+}
+
+/* Si OrderTrackingPage usa .form directamente como contenedor carta */
+.pageContainer .form {
+    max-width: 500px;
+    margin: 0 auto;
+    /* Centrado para tracking */
+    background-color: white;
+    /* O superficie */
 }
 
 .shippingForm h3,
 .orderSummary h3 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     padding-bottom: 1rem;
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+    font-size: 1.4rem;
 }
 
-/* --- Estilos para el formulario de envío --- */
+.shippingForm h4 {
+    font-family: var(--fuente-principal);
+    color: var(--color-principal);
+    margin-top: 1rem;
+}
+
+
+/* --- Inputs --- */
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem; /* Espacio entre los inputs */
+    gap: 1.25rem;
 }
 
-/* --- Estilos para el Resumen de la Orden --- */
+/* Esto afectará a los Inputs si usan clases directas, 
+   o si el componente Input hereda estilos (generalmente Input tiene su propio module) 
+   Pero aquí aseguramos consistencia si hay labels directos 
+*/
+
+/* --- Resumen --- */
 .summaryItemList {
     display: flex;
     flex-direction: column;
@@ -71,17 +114,18 @@
 .summaryItem {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: #555;
 }
 
 .summaryItem span:first-child {
     margin-right: 1rem;
+    font-weight: 500;
 }
 
 .summaryDivider {
     border: 0;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #ddd;
     margin: 1.5rem 0;
 }
 
@@ -89,20 +133,21 @@
     display: flex;
     justify-content: space-between;
     font-size: 1rem;
-    color: #555;
+    color: #444;
     margin-bottom: 0.5rem;
 }
 
 .summaryTotal {
     display: flex;
     justify-content: space-between;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-principal);
     margin-top: 1rem;
+    font-family: var(--fuente-titulos);
 }
 
-/* --- Estilos para Método de Pago --- */
+/* --- Selects & Options --- */
 .paymentMethodSection {
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
@@ -112,7 +157,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-oscuro);
     font-size: 1rem;
 }
 
@@ -120,17 +165,17 @@
     width: 100%;
     padding: 0.75rem;
     font-size: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: #fff;
-    font-family: var(--fuente-principal, inherit);
+    background-color: white;
+    font-family: var(--fuente-principal);
     transition: border-color 0.2s ease-in-out;
 }
 
 .selectInput:focus {
     outline: none;
-    border-color: var(--color-principal, #007bff);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(160, 82, 45, 0.1);
 }
 
 .paymentNote {
@@ -138,4 +183,30 @@
     color: #666;
     margin-top: 0.5rem;
     line-height: 1.4;
+}
+
+.errorMessage {
+    color: var(--color-peligro);
+    text-align: center;
+    background: rgba(231, 76, 60, 0.1);
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+/* Radio buttons container */
+.radioGroup label,
+.radioOption {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.radioGroup input[type="radio"],
+.radioOption input[type="radio"] {
+    accent-color: var(--color-principal);
+    width: 1.2rem;
+    height: 1.2rem;
 }

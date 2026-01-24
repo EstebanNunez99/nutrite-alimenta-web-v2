@@ -1,29 +1,32 @@
-/* CartPage.module.css */
+/* CartPage.module.css - Rediseño Global */
 
 .container {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 2rem;
+    min-height: 80vh;
 }
 
 .pageTitle {
     text-align: center;
     margin-top: 0;
     margin-bottom: 2.5rem;
-    color: #333;
+    color: var(--color-texto-terciario);
+    /* Texto claro para fondo oscuro */
+    font-family: var(--fuente-titulos);
+    font-size: 2.5rem;
 }
 
 /* --- La grilla principal de 2 columnas --- */
 .cartGrid {
     display: grid;
-    grid-template-columns: 1fr; /* 1 columna por defecto en móviles */
+    grid-template-columns: 1fr;
     gap: 2rem;
 }
 
-/* A partir de 992px, pasamos a 2 columnas */
 @media (min-width: 992px) {
     .cartGrid {
-        grid-template-columns: 2fr 1fr; /* Los items ocupan el doble que el resumen */
+        grid-template-columns: 2fr 1fr;
     }
 }
 
@@ -38,14 +41,17 @@
     align-items: center;
     gap: 1.5rem;
     background-color: var(--color-superficie);
+    /* #e9e9e9 */
     padding: 1.5rem;
     border-radius: var(--borde-radio);
     box-shadow: var(--sombra-suave);
-    border: 1px solid #f0f0f0;
-    transition: box-shadow 0.2s ease;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .cartItem:hover {
-    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 
@@ -54,7 +60,7 @@
     height: 100px;
     object-fit: cover;
     border-radius: var(--borde-radio);
-    flex-shrink: 0; /* Evita que la imagen se encoja */
+    flex-shrink: 0;
 }
 
 .itemDetails {
@@ -64,15 +70,17 @@
 .itemDetails h4 {
     margin: 0 0 0.5rem 0;
     font-size: 1.1rem;
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
 }
 
 .itemDetails p {
     margin: 0.25rem 0;
     color: var(--color-texto-secundario);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
-/* --- NUEVO: Control de Cantidad --- */
+/* --- Control de Cantidad --- */
 .quantityControl {
     display: flex;
     align-items: center;
@@ -80,37 +88,16 @@
     margin-top: 0.75rem;
 }
 
-.quantityButton {
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-}
-.quantityButton:hover {
-    background-color: #e0e0e0;
-}
-.quantityButton:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 .quantityDisplay {
     font-weight: bold;
     min-width: 20px;
     text-align: center;
+    color: var(--color-texto-principal);
 }
 
-/* Separamos el botón de eliminar */
 .removeItemButton {
-    margin-left: auto; /* Empuja el botón a la derecha */
-    align-self: flex-start; /* Lo alinea arriba */
+    margin-left: auto;
+    align-self: flex-start;
 }
 
 /* --- Resumen de Compra --- */
@@ -119,15 +106,19 @@
     padding: 2rem;
     border-radius: var(--borde-radio);
     box-shadow: var(--sombra-suave);
-    border: 1px solid #f0f0f0;
+    border: none;
     position: sticky;
     top: 100px;
+    height: fit-content;
 }
 
 .summary h3 {
     margin-top: 0;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+    font-size: 1.5rem;
 }
 
 .summaryRow {
@@ -135,15 +126,17 @@
     justify-content: space-between;
     margin: 1rem 0;
     color: #555;
+    font-size: 1rem;
 }
 
 .summaryTotal {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #333;
+    color: var(--color-principal);
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-family: var(--fuente-titulos);
 }
 
 
@@ -151,12 +144,20 @@
 .emptyCart {
     text-align: center;
     padding: 4rem 2rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px dashed #ddd;
+    background-color: var(--color-superficie);
+    border-radius: var(--borde-radio);
+    box-shadow: var(--sombra-suave);
     margin: 2rem auto;
     max-width: 800px;
 }
 
-.emptyCart h2 { margin-top: 0; }
-.emptyCart p { margin-bottom: 1.5rem; }
+.emptyCart h2 {
+    margin-top: 0;
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+}
+
+.emptyCart p {
+    margin-bottom: 1.5rem;
+    color: var(--color-texto-secundario);
+}

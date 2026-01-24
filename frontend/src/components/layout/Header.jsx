@@ -2,65 +2,48 @@
 // frontend/src/components/layout/Header.jsx
 
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaBars, FaTimes, FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa"; // Iconos sociales
+import { FaXTwitter } from "react-icons/fa6"; // X icon
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
-// import { toast } from "react-toastify"; // <-- Eliminado (ya no se usa)
-import Button from "../ui/Button";
 import styles from "./Header.module.css";
 
-// --- CAMBIO: Lógica de NavLinks completamente refactorizada ---
-const NavLinks = ({ onLinkClick }) => {
+// --- NavLinks Component ---
+const NavLinks = ({ onLinkClick, mobile = false }) => {
   const { isAuthenticated, usuario } = useAuth();
   const { itemCount, openCart } = useCart();
-  // const navigate = useNavigate(); // <-- Eliminado (ya no se usa)
 
-  // Eliminada la función 'handlePrivateLinkClick'
-
-  // La lógica del carrito ahora es pública
   const handleCartClick = (e) => {
     e.preventDefault();
     openCart();
     if (onLinkClick) onLinkClick();
   };
 
+  const linkClass = styles.navLink;
+
   return (
     <>
       {isAuthenticated && usuario.rol === "admin" ? (
-        // --- VISTA DE ADMIN ---
         <>
-          <Button to="/admin" variant="primary" onClick={onLinkClick}>
-            Panel Admin
-          </Button>
-          <Button to="/admin/settings" variant="secondary" onClick={onLinkClick}>
-            Configuracion
-          </Button>
-          <Button to="/perfil" variant="link" onClick={onLinkClick}>
-            Mi Perfil
-          </Button>
-          {/* El admin no ve el carrito ni el catálogo general */}
+          <Link to="/admin" className={linkClass} onClick={onLinkClick}>Panel Admin</Link>
+          <Link to="/admin/settings" className={linkClass} onClick={onLinkClick}>Configuración</Link>
+          <Link to="/perfil" className={linkClass} onClick={onLinkClick}>Mi Perfil</Link>
         </>
       ) : (
-        // --- VISTA DE INVITADO ---
         <>
-          <Button to="/" variant="link" onClick={onLinkClick}>Inicio</Button>
-          <Button to="/productos" variant="link" onClick={onLinkClick}>Catálogo</Button>
+          <Link to="/" className={linkClass} onClick={onLinkClick}>Inicio</Link>          <Link to="/productos" className={linkClass} onClick={onLinkClick}>Catálogo</Link>
+          {/* <Link to="/franquicias" className={linkClass} onClick={onLinkClick}>Franquíciate</Link> */}
+          <Link to="/seguimiento" className={linkClass} onClick={onLinkClick}>Mi Pedido</Link>
 
-          {/* Reemplazamos "Mis Pedidos" por "Seguimiento" */}
-          <Button to="/seguimiento" variant="link" onClick={onLinkClick}>
-            Mi pedido
-          </Button>
-
-          <Button variant="link" onClick={handleCartClick}>
+          <button className={linkClass} onClick={handleCartClick}>
             Carrito ({itemCount})
-          </Button>
+          </button>
         </>
       )}
     </>
   );
 };
-// --- FIN CAMBIO ---
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -83,38 +66,39 @@ const Header = () => {
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
-      <div className={styles.leftSection}>
-        <Link to="/" className={styles.logo}>
-          <img src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png" alt="Logo E.N." className={styles.logoImg} />
-        </Link>
+
+      {/* SECCION IZQUIERDA: LOGO */}
+      <div className={styles.logoSection}>
+        <div className={styles.logoContainer}>
+          <Link to="/">
+            <img src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png" alt="Logo" className={styles.logoImg} />
+          </Link>
+        </div>
       </div>
 
-      <div className={styles.centerSection}>
-        <Link to="/" className={styles.storeLink}>
-          <h1 className={styles.storeTitle}>Nutrirte Alimenta</h1>
-        </Link>
-      </div>
-
-      <div className={styles.rightSection}>
+      {/* SECCION DERECHA: BARRA DE NAVEGACION */}
+      <div className={styles.navSection}>
         <nav className={styles.desktopNav}>
           <NavLinks />
         </nav>
-
-        <button
-          className={`${styles.hamburgerButton} ${isMenuOpen ? styles.active : ""}`}
-          onClick={toggleMenu}
-          aria-label="Abrir menú"
-        >
-          {isMenuOpen ? <FaTimes /> : <FaBars />}
-        </button>
       </div>
 
+      {/* HAMBURGER BUTTON (Mobile only) */}
+      <button
+        className={`${styles.hamburgerButton} ${isMenuOpen ? styles.active : ""}`}
+        onClick={toggleMenu}
+        aria-label="Abrir Cataólgo"
+      >
+        {isMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* MOBILE MENU OVERLAY */}
       <div
         className={`${styles.mobileMenu} ${isMenuOpen ? styles.isOpen : ""}`}
         onClick={closeMenu}
       >
         <nav className={styles.mobileNavLinks} onClick={(e) => e.stopPropagation()}>
-          <NavLinks onLinkClick={closeMenu} />
+          <NavLinks onLinkClick={closeMenu} mobile />
         </nav>
       </div>
     </header>

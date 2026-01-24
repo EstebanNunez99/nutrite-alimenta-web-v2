@@ -1,187 +1,205 @@
-/*revisado*/
+/* Header.module.css - Rediseño 'Split Layout' */
+
 .header {
+  background-color: var(--color-principal);
   position: sticky;
   top: 0;
   z-index: 1000;
   width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+
+  /* Layout Horizontal Flex */
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--espaciado-sm) var(--espaciado-md);
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.4s ease-in-out;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  align-items: stretch;
+  /* Para que el separador ocupe todo el alto */
+  padding: 0;
+  /* Quitamos padding contenedor para controlar secciones */
+  height: 100px;
+  /* Altura fija base para el logo */
 }
 
 .scrolled {
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(0);
+  height: 70px;
+  /* Reduce altura al scrollear */
+  box-shadow: var(--sombra-suave);
+  background-color: var(--color-principal);
+  opacity: 0.98;
 }
 
-.leftSection,
-.rightSection {
+/* SECCION IZQUIERDA: LOGO */
+.logoSection {
   display: flex;
   align-items: center;
-  gap: var(--espaciado-sm);
-  flex: 1;
-}
-
-.rightSection {
-  justify-content: flex-end;
-}
-
-.centerSection {
-  flex: 1;
-  text-align: center;
+  justify-content: center;
+  padding: 0 3rem;
+  /* Más espacio a la derecha/izquierda */
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  /* Línea más sutil */
+  flex-shrink: 0;
 }
 
 .logoImg {
-  height: 60px;
-  transition: transform 0.3s ease, filter 0.3s ease;
+  height: 70px;
+  width: auto;
+  transition: height 0.3s ease;
 }
 
-.logoImg:hover {
-  transform: scale(1.1) rotate(5deg);
-  filter: drop-shadow(0 0 8px var(--color-principal));
+.scrolled .logoImg {
+  height: 50px;
 }
 
-.storeLink {
-  text-decoration: none;
+/* SECCION DERECHA: NAV */
+.navSection {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Enlaces centrados en el espacio restante */
+  padding: 0 2rem;
 }
 
-.storeTitle {
-  font-size: 2rem;
-  font-weight: 800;
-  background: linear-gradient(90deg, var(--color-principal), #9b59b6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: 1px;
-  transition: transform 0.3s ease;
-}
-
-.storeTitle:hover {
-  transform: scale(1.05);
-}
-
-/* --- NAV LINKS --- */
-.desktopNav a,
-.mobileNavLinks a {
-  text-decoration: none;
-  color: var(--color-texto-principal);
-  font-weight: 600;
-  position: relative;
-  font-size: 1rem;
-  transition: all 0.3s ease-in-out;
-}
-
-.desktopNav a:hover,
-.mobileNavLinks a:hover {
-  color: var(--color-principal);
-  transform: translateY(-2px);
-}
-
-.desktopNav a::after,
-.mobileNavLinks a::after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: -4px;
-  left: 0;
-  background: linear-gradient(90deg, var(--color-principal), #9b59b6);
-  transition: width 0.3s ease-in-out;
-}
-
-.desktopNav a:hover::after,
-.mobileNavLinks a:hover::after {
-  width: 100%;
-}
-
-/* --- MENÚ RESPONSIVO --- */
 .desktopNav {
-  display: none;
+  display: flex;
+  gap: 3rem;
+  /* Espaciado generoso entre enlaces */
+  align-items: center;
 }
 
-@media (min-width: 992px) {
-  .desktopNav {
-    display: flex;
-    align-items: center;
-    gap: var(--espaciado-md);
-  }
-}
-
-/* --- BOTÓN HAMBURGUESA --- */
-.hamburgerButton {
-  display: block;
+/* Enlaces */
+.navLink {
+  color: var(--color-texto-terciario);
+  /* Texto claro */
+  text-decoration: none;
+  font-family: var(--fuente-titulos);
+  /* Fuente Cinzel */
+  font-size: 0.95rem;
+  font-weight: 700;
+  /* Un poco más de peso para legibilidad */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color 0.2s;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.8rem;
-  color: var(--color-texto-principal);
-  z-index: 1002;
-  transition: transform 0.3s ease;
+  padding: 0;
+  opacity: 0.9;
 }
 
-.hamburgerButton:hover {
-  transform: rotate(10deg) scale(1.2);
-  color: var(--color-principal);
+.navLink:hover {
+  color: white;
+  opacity: 1;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.active {
-  transform: rotate(180deg);
-  color: var(--color-principal);
+/* MOBILE MENU & HAMBURGER (Se mantiene lógica de overlay) */
+.hamburgerButton {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-texto-terciario);
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: auto;
+  /* Empujar a la derecha en móvil */
+  padding-right: 1rem;
 }
 
-@media (min-width: 992px) {
-  .hamburgerButton {
-    display: none;
-  }
-}
-
-/* --- MENÚ MÓVIL --- */
 .mobileMenu {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: 100%;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
-  transform: translateX(100%);
-  transition: transform 0.4s ease-in-out;
-  z-index: 1001;
+  background-color: var(--color-principal);
+  z-index: 2000;
   display: flex;
   justify-content: flex-end;
+  /* Alineado a la derecha */
+  align-items: center;
+  /* Centrado vertical */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  padding-right: 3rem;
+  /* Espacio desde el borde derecho */
 }
 
 .mobileMenu.isOpen {
-  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
 }
 
 .mobileNavLinks {
-  background: linear-gradient(180deg, var(--color-superficie), #f7f7f7);
-  width: 80%;
-  max-width: 340px;
-  padding: 5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
-  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.4s ease;
-  border-radius: 12px 0 0 12px;
+  gap: 2rem;
+  text-align: right;
+  /* Texto a la derecha */
+  align-items: flex-end;
+  /* Items flex a la derecha */
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(20%);
-    opacity: 0;
+.mobileNavLinks button,
+.mobileNavLinks a {
+  font-size: 1.5rem;
+  color: var(--color-texto-terciario) !important;
+}
+
+/* Redes sociales (Opcionalmente ocultas o integradas si se pidieran) */
+/* Por ahora las ocultamos para coincidir exactamente con la imagen referencial limpia */
+.socialIcons {
+  display: none;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .header {
+    height: 80px;
+    /* Un poco más alto para que el logo respire */
+    /* Usamos relative para posicionar elementos absolutamente */
+    position: relative;
+    /* Cambiamos a space-between para Logo Izq - Menú Der */
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    /* Padding lateral */
+    align-items: center;
+    /* Centrado vertical */
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  /* Logo a la izquierda (flujo normal flex) */
+  .logoSection {
+    border-right: none;
+    padding: 0;
+    position: static;
+    /* Quitamos absolute */
+    transform: none;
+    width: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .logoImg {
+    height: 55px;
+    /* Tamaño ajustado */
+  }
+
+  .navSection {
+    display: none;
+  }
+
+  /* Botón Hamburger a la derecha (flujo normal flex) */
+  .hamburgerButton {
+    display: block;
+    position: static;
+    /* Quitamos absolute, usa el flex de space-between */
+    transform: none;
+    margin: 0;
+    padding: 0;
+    font-size: 1.8rem;
+    /* Más grande */
+    color: var(--color-texto-terciario);
+    /* Asegurar color visible */
   }
 }
