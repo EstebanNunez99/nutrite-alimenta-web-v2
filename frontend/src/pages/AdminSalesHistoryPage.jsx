@@ -136,6 +136,39 @@ const AdminSalesHistoryPage = () => {
         }).format(amount);
     };
 
+    // --- NUEVO: Función para exportar CSV ---
+    const downloadCSV = () => {
+        if (orders.length === 0) {
+            toast.warn('No hay órdenes para exportar');
+            return;
+        }
+
+        const headers = ['ID', 'Cliente', 'Email', 'Fecha', 'Total', 'Estado Pago', 'Estado Entrega', 'Tipo Envío'];
+        const csvContent = [
+            headers.join(','),
+            ...orders.map(order => [
+                order._id,
+                `"${order.customerInfo?.nombre || ''}"`, // Comillas para escapar comas en nombres
+                order.customerInfo?.email || '',
+                new Date(order.createdAt).toLocaleDateString(),
+                order.totalPrice,
+                order.status,
+                order.deliveryStatus,
+                order.shippingType || 'standard'
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `ventas_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+    // ----------------------------------------
+
     if (loading && orders.length === 0) {
         return <Spinner />;
     }
@@ -144,9 +177,14 @@ const AdminSalesHistoryPage = () => {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h2>Historial de Ventas</h2>
-                <Button onClick={() => navigate('/admin/orders/manual')} variant="primary">
-                    + Nueva Venta
-                </Button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <Button onClick={downloadCSV} variant="secondary" style={{ backgroundColor: '#28a745', borderColor: '#28a745', color: 'white' }}>
+                        📥 Exportar Excel/CSV
+                    </Button>
+                    <Button onClick={() => navigate('/admin/orders/manual')} variant="primary">
+                        + Nueva Venta
+                    </Button>
+                </div>
             </div>
 
             {/* ... (Sección de Filtros - sin cambios) ... */}
@@ -239,7 +277,6 @@ const AdminSalesHistoryPage = () => {
             <div className={styles.summary}>
                 <p>Total de órdenes: <strong>{total}</strong></p>
             </div>
-            <p>*Poner estados de Entrega mas desciptivos, capaz cambiar por Estado de pedido 'Aceptado' 'Entregado'</p>
             <div className={styles.tableContainer}>
                 {orders.length === 0 ? (
                     <p className={styles.noData}>No se encontraron órdenes</p>

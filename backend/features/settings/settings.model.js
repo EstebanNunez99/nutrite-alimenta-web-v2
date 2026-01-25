@@ -30,6 +30,23 @@ const settingsSchema = new mongoose.Schema({
         ],
         // Texto general de ayuda o configuración extra
         enabled: { type: Boolean, default: true }
+    },
+    // RF-Global: Información del Negocio (Footer/Header)
+    address: {
+        type: String,
+        default: 'Calle Falsa 123, Corrientes'
+    },
+    contactPhone: {
+        type: String,
+        default: '+54 379 400-0000'
+    },
+    contactEmail: {
+        type: String,
+        default: 'info@nutrirte.com'
+    },
+    openingHours: {
+        type: String,
+        default: 'Lun a Vie: 09:00 - 18:00 hs'
     }
 }, {
     timestamps: true

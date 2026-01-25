@@ -1,7 +1,9 @@
 //revisado
+//verificado
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaSearch, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
-import { getAllProducts, getAllCategories } from '../services/productService'; // Asumimos una nueva función
+import { getAllProducts, getAllCategories } from '../services/productService';
+import { getSettings } from '../services/settingsService'; // <-- IMPORTADO
 import ProductCard from '../features/products/ProductCard';
 import Paginate from '../components/ui/Paginate';
 import Spinner from '../components/ui/Spinner';
@@ -17,6 +19,9 @@ const ProductsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // Configuración global (Horarios y dirección)
+    const [settings, setSettings] = useState(null);
+
     // --- STATE PARA MODAL ---
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +30,19 @@ const ProductsPage = () => {
     const [sort, setSort] = useState('createdAt_desc'); // Por defecto: más nuevos primero
     const [categories, setCategories] = useState([]);
     const [filterCategory, setFilterCategory] = useState(''); // Por defecto: todas
+
+    // --- CARGAR CONFIGURACIÓN GLOBAL ---
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const data = await getSettings();
+                setSettings(data);
+            } catch (err) {
+                console.error("Error loading settings", err);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     // --- USEEFFECT PARA CARGAR CATEGORÍAS (SOLO UNA VEZ) ---
     useEffect(() => {
@@ -106,8 +124,8 @@ const ProductsPage = () => {
                     <h1 className={styles.heroTitle}>Nutrirte Alimenta</h1>
                     <p className={styles.heroSubtitle}>Descubrí nuestros productos frescos y saludables</p>
                     <div className={styles.heroInfo}>
-                        <span><FaClock className={styles.icon} /> Lun a Vie: <br /> 8:30 a 12:30 <br />17:30 a 21:30 <br />Sab: 8:30 a 12:30</span>
-                        <span><FaMapMarkerAlt className={styles.icon} /> Barranqueras, Chaco</span>
+                        <span><FaClock className={styles.icon} /> {settings?.openingHours || 'Consultar Horarios'}</span>
+                        <span><FaMapMarkerAlt className={styles.icon} /> {settings?.address || 'Corrientes, Argentina'}</span>
                     </div>
                 </div>
             </section>

@@ -521,3 +521,26 @@ export const triggerDemandSummary = async (req, res) => {
         res.status(500).json({ msg: 'Error de servidor', error: error.message });
     }
 };
+
+// @desc    Reenviar email de confirmación (Manual)
+// @route   POST /api/orders/:id/resend-email
+// @access  Private/Admin
+export const resendOrderEmail = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ msg: 'Orden no encontrada' });
+        }
+
+        // Usamos la misma lógica que al crear
+        if (order.customerInfo && order.customerInfo.email) {
+            await sendOrderNotification(order);
+            return res.json({ msg: 'Email enviado correctamente' });
+        } else {
+            return res.status(400).json({ msg: 'La orden no tiene email de cliente asociado' });
+        }
+    } catch (error) {
+        console.error('Error al reenviar email:', error);
+        res.status(500).json({ msg: 'Error al enviar email' });
+    }
+};

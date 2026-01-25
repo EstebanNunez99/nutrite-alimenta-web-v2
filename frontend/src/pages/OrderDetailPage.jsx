@@ -11,9 +11,13 @@ import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import useDocumentTitle from '../hooks/useDocumentTitle'
 import { useAuth } from '../hooks/useAuth'; // Importamos useAuth
-// --- CAMBIO ---
-import { updateDeliveryStatus, updateSplitDeliveryStatus } from '../services/orderService';
+import { updateDeliveryStatus, updateSplitDeliveryStatus, resendEmail } from '../services/orderService';
 // --- FIN CAMBIO ---
+// --- FIN CAMBIO ---
+import styles from './styles/AdminShared.module.css'; // <-- Fixed missing import
+
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const OrderDetailPage = () => {
     useDocumentTitle('Detalle del pedido')
@@ -26,6 +30,19 @@ const OrderDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isPaying, setIsPaying] = useState(false);
+
+    // --- NUEVO: Enviar Email (Server-Side) ---
+    const sendEmail = async () => {
+        try {
+            toast.info("Enviando email de confirmación...");
+            await resendEmail(order._id);
+            toast.success("¡Email enviado éxitosamente al cliente y admin!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al enviar el email.");
+        }
+    };
+    // ---------------------------
 
     useEffect(() => {
         let interval = null;
@@ -129,7 +146,15 @@ const OrderDetailPage = () => {
 
     return (
         <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '2rem', backgroundColor: '#fff', borderRadius: '8px', boxShadow: 'var(--sombra-suave)' }}>
-            <h2>Detalle de la Orden #{order._id}</h2>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Detalle de la Orden #{order._id}</h1>
+                {usuario && usuario.rol === 'admin' && (
+                    <Button onClick={sendEmail} variant="primary" style={{ marginLeft: 'auto' }}>
+                        📧 Enviar Email
+                    </Button>
+                )}
+            </div>
+
             <p style={{ color: '#666', marginBottom: '1.5rem' }}>
                 Fecha: {new Date(order.createdAt).toLocaleDateString('es-AR', {
                     year: 'numeric',

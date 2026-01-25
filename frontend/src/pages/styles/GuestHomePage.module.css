@@ -142,6 +142,33 @@
     align-items: center;
 }
 
+/* ... tus estilos anteriores ... */
+
+.adminBar {
+    position: fixed;
+    top: 80px;
+    /* Debajo del navbar */
+    right: 20px;
+    z-index: 1000;
+    /* Flotante para que se vea siempre */
+}
+
+.editInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: #fff8dc;
+    /* Color cremita para indicar que es editable */
+    color: #333;
+}
+
+.editInput:focus {
+    outline: 2px solid var(--color-principal);
+    background-color: white;
+}
+
 .spotlightImage {
     width: 100%;
     border-radius: var(--borde-radio);

@@ -33,7 +33,15 @@ export const getSettings = async (req, res) => {
 // @access  Private/Admin
 export const updateSettings = async (req, res) => {
     try {
-        const { storeOpen, storeCloseMessage, demandRules } = req.body;
+        const {
+            storeOpen,
+            storeCloseMessage,
+            demandRules,
+            address,
+            contactPhone,
+            contactEmail,
+            openingHours
+        } = req.body;
 
         let settings = await Settings.findOne({ key: 'general-settings' });
 
@@ -43,6 +51,12 @@ export const updateSettings = async (req, res) => {
 
         settings.storeOpen = storeOpen !== undefined ? storeOpen : settings.storeOpen;
         settings.storeCloseMessage = storeCloseMessage || settings.storeCloseMessage;
+
+        // Actualizamos campos de contacto si vienen
+        if (address !== undefined) settings.address = address;
+        if (contactPhone !== undefined) settings.contactPhone = contactPhone;
+        if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+        if (openingHours !== undefined) settings.openingHours = openingHours;
 
         if (demandRules) {
             settings.demandRules = demandRules;

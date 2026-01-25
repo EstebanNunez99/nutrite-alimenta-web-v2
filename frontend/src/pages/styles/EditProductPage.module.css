@@ -18,7 +18,7 @@
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; 
+    gap: 1.5rem;
 }
 
 .formGroup {
@@ -59,4 +59,17 @@ textarea.formInput {
     margin-top: 1rem;
     display: flex;
     justify-content: flex-end;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+/* Estilos específicos para Select para igualar Inputs */
+select.formInput {
+    height: 48px;
+    /* Altura similar a inputs estándar */
+    padding: 10px;
+    background-color: #fff;
+    cursor: pointer;
 }

@@ -24,13 +24,19 @@ const SettingsPage = () => {
         }
     };
 
-    const handleToggleStore = async () => {
+    // Función para manejar cambios en los inputs de texto
+    const handleInputChange = (e) => {
+        setSettings({ ...settings, [e.target.name]: e.target.value });
+    };
+
+    // Guardar cambios generales (dirección, horarios, etc)
+    const handleSaveInfo = async (e) => {
+        e.preventDefault();
         try {
-            const updated = await updateSettings({ storeOpen: !settings.storeOpen });
-            setSettings(updated);
-            toast.success(updated.storeOpen ? 'Tienda Abierta' : 'Tienda Cerrada');
+            await updateSettings(settings); // 'settings' ya tiene los valores actualizados por el onChange
+            toast.success('Información actualizada correctamente');
         } catch (error) {
-            toast.error('Error al actualizar');
+            toast.error('Error al guardar información');
         }
     };
 
@@ -38,17 +44,69 @@ const SettingsPage = () => {
 
     return (
         <div className={styles.container}>
-            <h2>Configuración del Sistema</h2>
+            <h2 className={styles.pageTitle}>Configuración del Sistema</h2>
 
+            {/* TARJETA 2: INFORMACIÓN DE CONTACTO Y HORARIOS */}
             <div className={styles.card}>
-                <h3>Estado de la Tienda</h3>
-                <p>Actualmente la tienda está: <strong>{settings.storeOpen ? 'ABIERTA' : 'CERRADA'}</strong></p>
-                <Button onClick={handleToggleStore} variant={settings.storeOpen ? 'danger' : 'primary'}>
-                    {settings.storeOpen ? 'Cerrar Tienda' : 'Abrir Tienda'}
-                </Button>
+                <h3>Información del Negocio</h3>
+                <p style={{ marginBottom: '1rem', color: '#666' }}>Esta información se mostrará en el pie de página (Footer) de la web.</p>
+
+                <form onSubmit={handleSaveInfo} className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                        <label>Dirección:</label>
+                        <input
+                            type="text"
+                            name="address"
+                            value={settings.address || ''}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Ej: Av. Costanera 1234"
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label>Horarios de Atención:</label>
+                        <input
+                            type="text"
+                            name="openingHours"
+                            value={settings.openingHours || ''}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Ej: Lun a Vie 08:00 - 20:00"
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label>Teléfono / WhatsApp:</label>
+                        <input
+                            type="text"
+                            name="contactPhone"
+                            value={settings.contactPhone || ''}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Ej: +54 9 379 4123456"
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label>Email de Contacto:</label>
+                        <input
+                            type="text"
+                            name="contactEmail"
+                            value={settings.contactEmail || ''}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                            placeholder="Ej: info@tutienda.com"
+                        />
+                    </div>
+
+                    <div style={{ marginTop: '1rem' }}>
+                        <Button type="submit" variant="primary">Guardar Información</Button>
+                    </div>
+                </form>
             </div>
 
-            {/* Aquí agregaremos la configuración de días de entrega más adelante */}
+            {/* Espacio para futuras configs */}
         </div>
     );
 };

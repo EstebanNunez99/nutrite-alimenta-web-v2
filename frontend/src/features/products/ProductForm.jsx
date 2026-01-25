@@ -11,7 +11,7 @@ import styles from '../../pages/styles/EditProductPage.module.css';
 
 const ProductForm = ({ onSubmit, initialData = {} }) => {
     const [formData, setFormData] = useState({
-        nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: '', tipo: 'stock'
+        nombre: '', descripcion: '', precio: '', stock: '', categoria: '', imagen: '', tipo: 'stock', fechaVencimiento: ''
     });
     const [uploading, setUploading] = useState(false);
     const [categories, setCategories] = useState([]);
@@ -29,7 +29,8 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             stock: stock || '',
             categoria: Array.isArray(categoria) ? categoria : (categoria ? [categoria] : []), // Manejo legacy string
             imagen: imagen || '',
-            tipo: tipo || 'stock'
+            tipo: tipo || 'stock',
+            fechaVencimiento: initialData?.fechaVencimiento || ''
         });
 
         // Si hay una categoría inicial, verificar si está en la lista (se hará después de cargar categorías)
@@ -161,6 +162,18 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     <Input id="stock" type="number" name="stock" value={formData.stock} onChange={onChange} required className={styles.formInput} />
                 </div>
             )}
+
+            <div className={styles.formGroup}>
+                <label htmlFor="fechaVencimiento" className={styles.formLabel}>Fecha de Vencimiento (Opcional)</label>
+                <Input
+                    id="fechaVencimiento"
+                    type="date"
+                    name="fechaVencimiento"
+                    value={formData.fechaVencimiento ? new Date(formData.fechaVencimiento).toISOString().split('T')[0] : ''}
+                    onChange={onChange}
+                    className={styles.formInput}
+                />
+            </div>
 
             <div className={styles.formGroup}>
                 <label htmlFor="categoria" className={styles.formLabel}>Categorías</label>
@@ -296,6 +309,7 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                 />
 
                 <Button type="button" variant="secondary" onClick={handleUploadClick} className={styles.fullWidth} disabled={uploading}>
+                    <span style={{ fontSize: '1.2rem', marginRight: '0.5rem' }}></span>
                     {uploading ? 'Subiendo...' : (formData.imagen ? 'Cambiar Imagen' : 'Subir Imagen')}
                 </Button>
             </div>

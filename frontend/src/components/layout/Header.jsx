@@ -26,6 +26,7 @@ const NavLinks = ({ onLinkClick, mobile = false }) => {
     <>
       {isAuthenticated && usuario.rol === "admin" ? (
         <>
+          <Link to="/" className={linkClass} onClick={onLinkClick}>Inicio</Link>
           <Link to="/admin" className={linkClass} onClick={onLinkClick}>Panel Admin</Link>
           <Link to="/admin/settings" className={linkClass} onClick={onLinkClick}>Configuración</Link>
           <Link to="/perfil" className={linkClass} onClick={onLinkClick}>Mi Perfil</Link>

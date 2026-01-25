@@ -13,16 +13,16 @@ const Button = ({
     to, // La prop que lo convierte en un enlace de navegación
     ...props
 }) => {
-    
+
     // Función auxiliar para construir las clases dinámicamente
     const getButtonClasses = (isLinkActive = false) => {
         let classes = `${styles.btn} ${styles[variant]}`;
-        
+
         // Aplica la clase activa para la variante 'link' (navegación)
         if (isLinkActive && variant === 'link') {
             classes += ` ${styles.linkActive}`;
         }
-        
+
         // Aplica la clase activa para otras variantes (paginación)
         if (isActive && variant !== 'link') {
             classes += ` ${styles.active}`;
@@ -36,10 +36,8 @@ const Button = ({
         return (
             <NavLink
                 to={to}
-                // La prop 'end' es crucial. Le dice a NavLink que la ruta "/" solo
-                // debe estar activa si la URL es EXACTAMENTE "/", y no en sub-rutas.
-                end={to === '/'} 
-                className={({ isActive: isLinkActive }) => getButtonClasses(isLinkActive)}
+                end={to === '/'}
+                className={({ isActive: isLinkActive }) => `${getButtonClasses(isLinkActive)} ${props.className || ''}`}
                 onClick={onClick}
                 {...props}
             >
@@ -51,7 +49,7 @@ const Button = ({
     // Si no, se renderiza como un botón normal
     return (
         <button
-            className={getButtonClasses()}
+            className={`${getButtonClasses()} ${props.className || ''}`}
             onClick={onClick}
             type={type}
             disabled={disabled}

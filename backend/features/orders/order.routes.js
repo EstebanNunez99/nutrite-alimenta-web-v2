@@ -16,7 +16,8 @@ import {
 
 
     updateSplitDeliveryStatus,
-    triggerDemandSummary
+    triggerDemandSummary,
+    resendOrderEmail
 } from './order.controller.js';
 import { authMiddleware } from '../../shared/middlewares/auth.middleware.js';
 import { adminMiddleware } from '../../shared/middlewares/adminMiddleware.js';
@@ -60,5 +61,8 @@ router.put('/:id/status', authMiddleware, adminMiddleware, updateOrderStatus);
 
 // Trigger manual de resumen bajo demanda (Admin)
 router.post('/summary-trigger', authMiddleware, adminMiddleware, triggerDemandSummary);
+
+// Ruta NUEVA para reenviar email manual
+router.post('/:id/resend-email', authMiddleware, adminMiddleware, resendOrderEmail);
 
 export default router;

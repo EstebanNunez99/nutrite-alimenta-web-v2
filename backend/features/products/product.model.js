@@ -42,6 +42,11 @@ const productSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    // RF-New: Control de Vencimiento
+    fechaVencimiento: {
+        type: Date,
+        required: false
+    },
     // Relacionamos el producto con el usuario (admin) que lo creó.
     vendedor: {
         type: mongoose.Schema.Types.ObjectId,

@@ -70,7 +70,7 @@ const AppRouter = () => {
                     <Route path="products/create" element={<CreateProductPage />} />
                     <Route path="products/edit/:id" element={<EditProductPage />} />
                     <Route path="sales-history" element={<AdminSalesHistoryPage />} />
-                    <Route path="shipping-config" element={<AdminShippingConfigPage />} />
+                    {/* <Route path="shipping-config" element={<AdminShippingConfigPage />} /> */} {/* <-- Deshabilitado */}
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="orders/manual" element={<AdminCreateManualOrderPage />} />
                 </Route>

@@ -210,3 +210,16 @@
     width: 1.2rem;
     height: 1.2rem;
 }
+
+.confirmBtn {
+    width: 100%;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    padding: 1rem;
+    background-color: var(--color-principal);
+    color: white;
+    border: none;
+    border-radius: var(--borde-radio);
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}

@@ -91,3 +91,12 @@ export const updateSplitDeliveryStatus = async (orderId, statusInmediato, status
     });
     return res.data;
 };
+
+/**
+ * Reenviar email de confirmación (Admin)
+ * Llama a: POST /api/orders/:id/resend-email
+ */
+export const resendEmail = async (orderId) => {
+    const res = await api.post(`/orders/${orderId}/resend-email`);
+    return res.data;
+};

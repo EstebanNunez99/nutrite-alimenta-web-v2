@@ -23,6 +23,7 @@
     background-color: var(--color-principal);
     color: white;
     border: 1px solid var(--color-principal);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .primary:hover {
@@ -43,13 +44,17 @@
 
 /* Variante Secundaria */
 .secondary {
-    background-color: transparent;
+    background-color: white;
     color: var(--color-principal);
-    border: 1px solid var(--color-principal);
+    border: 2px solid var(--color-principal);
+    /* Borde más grueso */
+    font-weight: 700;
 }
 
 .secondary:hover {
     background-color: rgba(160, 82, 45, 0.1);
+    border-color: var(--color-principal-claro);
+    color: var(--color-principal-claro);
 }
 
 /* Variante Peligro */

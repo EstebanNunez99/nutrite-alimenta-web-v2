@@ -17,6 +17,7 @@ import productRoutes from './features/products/product.routes.js'
 import orderRoutes from './features/orders/order.routes.js';
 import shippingRoutes from './features/shipping/shipping.routes.js';
 import settingsRoutes from './features/settings/settings.routes.js';
+import configRoutes from './features/config/config.routes.js';
 // --- FIN CAMBIO ---
 
 // 1. Cargar Variables de Entorno
@@ -84,6 +85,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/config', configRoutes); // <-- AÑADIDO (CMS)
 
 // 8. Iniciar el Servidor
 app.listen(PORT, '0.0.0.0', () => {

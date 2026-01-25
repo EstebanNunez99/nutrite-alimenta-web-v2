@@ -14,15 +14,18 @@ import { FaEnvelope, FaLock } from 'react-icons/fa';
 // --- CAMBIO ---
 // Eliminamos la prop 'onSwitchToRegister'
 const Login = () => {
-// --- FIN CAMBIO ---
+    // --- FIN CAMBIO ---
     const { login } = useAuth();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const { email, password } = formData;
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+    const [loading, setLoading] = useState(false); // Valid state usage
+
     const onSubmit = async e => {
         e.preventDefault();
+        setLoading(true);
         try {
             await login(email, password);
             // Opcional: un toast de bienvenida
@@ -30,16 +33,17 @@ const Login = () => {
         } catch (error) {
             console.error(error.response ? error.response.data : error.message);
             toast.error(`Error: ${error.response ? error.response.data.msg : 'Credenciales inválidas'}`);
+            setLoading(false); // Only stop loading on error, success redirects
         }
     };
 
-     return (
+    return (
         <div className={styles.formContainer}>
             {/* --- CAMBIO --- */}
             <h2>Login de Administrador</h2>
             {/* --- FIN CAMBIO --- */}
             <form onSubmit={onSubmit} className={styles.form}>
-                
+
                 <Input
                     icon={<FaEnvelope />}
                     type="email"
@@ -49,7 +53,7 @@ const Login = () => {
                     onChange={onChange}
                     required
                 />
-                
+
                 <Input
                     icon={<FaLock />}
                     type="password"
@@ -60,11 +64,11 @@ const Login = () => {
                     required
                 />
 
-                <Button variant='secondary' type="submit" >
-                    Iniciar Sesión
+                <Button variant='secondary' type="submit" disabled={loading}>
+                    {loading ? 'Cargando...' : 'Iniciar Sesión'}
                 </Button>
             </form>
-            
+
             {/* --- CAMBIO --- */}
             {/* Eliminamos el párrafo y botón de "Regístrate" */}
             {/* <p className={styles.switchText}> ... </p> */}

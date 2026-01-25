@@ -2,7 +2,7 @@
 // frontend/src/context/AuthProvider.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
-import api from '../api/axios'; 
+import api from '../api/axios';
 import { AuthContext } from './AuthContext.js';
 
 const AuthProvider = ({ children }) => {
@@ -19,20 +19,26 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            // El interceptor ya sabe del token.
-            // Esta ruta '/users/profile' es CORRECTA, la verificamos en user.routes.js
-            api.get('/users/profile') 
+            api.get('/users/profile')
                 .then(res => {
-                    // Verificamos que el usuario del token sea admin
                     if (res.data.rol === 'admin') {
                         setUsuario(res.data);
                         setIsAuthenticated(true);
                     } else {
-                        // Si es un token de un 'cliente' (quizás de una versión vieja), lo sacamos
                         logout();
                     }
                 })
-                .catch(() => logout()) // Si el token es inválido, cerramos sesión.
+                .catch((error) => {
+                    console.error("Error validando sesión:", error);
+                    // Solo cerrar sesión si el token es inválido (401)
+                    if (error.response && error.response.status === 401) {
+                        logout();
+                    } else {
+                        // Si es otro error (ej. servidor caído), no borramos el token.
+                        // El usuario no podrá entrar a rutas protegidas, pero al recargar (cuando el server vuelva) funcionará.
+                        setIsAuthenticated(false);
+                    }
+                })
                 .finally(() => setCargando(false));
         } else {
             setCargando(false);
@@ -46,7 +52,7 @@ const AuthProvider = ({ children }) => {
         // --- FIN CAMBIO ---
 
         localStorage.setItem('token', res.data.token);
-        
+
         // --- CAMBIO (Optimización) ---
         // La respuesta de /auth/login ya incluye el objeto 'usuario'
         // No necesitamos hacer una segunda llamada a /users/profile
@@ -66,12 +72,12 @@ const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{
-            isAuthenticated, 
-            usuario, 
+            isAuthenticated,
+            usuario,
             cargando,
-            login, 
+            login,
             // registro, // <-- Eliminado
-            logout, 
+            logout,
             updateUserContext
         }}>
             {!cargando && children}
