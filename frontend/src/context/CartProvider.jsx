@@ -84,7 +84,6 @@ const CartProvider = ({ children }) => {
                         nombre: product.nombre,
                         imagen: product.imagen,
                         precio: product.precio,
-                        precio: product.precio,
                         stock: product.stock, // Guardamos stock para futuras validaciones
                         tipo: product.tipo // RF-001/002: Guardamos el tipo
                     },

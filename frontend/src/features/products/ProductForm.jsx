@@ -27,7 +27,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
             descripcion: descripcion || '',
             precio: precio || '',
             stock: stock || '',
-            stock: stock || '',
             categoria: Array.isArray(categoria) ? categoria : (categoria ? [categoria] : []), // Manejo legacy string
             imagen: imagen || '',
             tipo: tipo || 'stock'

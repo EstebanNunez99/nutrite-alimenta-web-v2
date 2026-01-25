@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import useDocumentTitle from '../hooks/useDocumentTitle'
-import { useAuth } from '../context/AuthContext'; // Importamos useAuth
+import { useAuth } from '../hooks/useAuth'; // Importamos useAuth
 // --- CAMBIO ---
 import { updateDeliveryStatus, updateSplitDeliveryStatus } from '../services/orderService';
 // --- FIN CAMBIO ---
