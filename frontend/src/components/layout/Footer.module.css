@@ -93,6 +93,54 @@
   transform: translateY(-3px);
 }
 
+/* Edit Button */
+.editButton {
+  margin-top: 15px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease-in-out;
+  width: fit-content;
+}
+
+.editButton:hover {
+  background-color: white;
+  color: var(--color-principal);
+  border-color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Edit Inputs */
+.editInput {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.editInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.editInput:focus {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
 /* Footer Bottom */
 .footerBottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);

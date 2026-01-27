@@ -228,7 +228,7 @@ const GuestHomePage = () => {
                         <div style={{ marginBottom: '1rem' }}>
                             {isEditing ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ fontSize: '0.8rem', color: '#666' }}>Texto Promocional (Opcional):</label>
+                                    <label style={{ fontSize: '0.8rem', color: '#ece2e2' }}>Texto Promocional (Opcional):</label>
                                     <input
                                         name="promoMessage"
                                         value={editForm.promoMessage}

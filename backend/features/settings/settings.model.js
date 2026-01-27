@@ -40,13 +40,43 @@ const settingsSchema = new mongoose.Schema({
         type: String,
         default: '+54 379 400-0000'
     },
+    contactPhoneEnabled: {
+        type: Boolean,
+        default: true
+    },
     contactEmail: {
         type: String,
         default: 'info@nutrirte.com'
     },
+    contactEmailEnabled: {
+        type: Boolean,
+        default: true
+    },
     openingHours: {
         type: String,
         default: 'Lun a Vie: 09:00 - 18:00 hs'
+    },
+    socialNetworks: {
+        facebook: {
+            url: { type: String, default: 'https://www.facebook.com/' },
+            enabled: { type: Boolean, default: true }
+        },
+        instagram: {
+            url: { type: String, default: 'https://www.instagram.com/' },
+            enabled: { type: Boolean, default: true }
+        },
+        twitter: {
+            url: { type: String, default: 'https://x.com/' },
+            enabled: { type: Boolean, default: true }
+        },
+        whatsapp: {
+            url: { type: String, default: 'https://wa.me/' },
+            enabled: { type: Boolean, default: true }
+        },
+        telegram: {
+            url: { type: String, default: 'https://t.me/' },
+            enabled: { type: Boolean, default: true }
+        }
     }
 }, {
     timestamps: true

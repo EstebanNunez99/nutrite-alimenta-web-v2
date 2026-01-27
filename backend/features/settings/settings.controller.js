@@ -16,9 +16,27 @@ export const getSettings = async (req, res) => {
                     days: [
                         { dayName: 'Miércoles', dayOfWeek: 3, cutoffDay: 2, cutoffTime: '14:00', enabled: true },
                         { dayName: 'Sábado', dayOfWeek: 6, cutoffDay: 5, cutoffTime: '14:00', enabled: true }
-                    ]
+                    ],
+                    socialNetworks: {
+                        facebook: { url: 'https://www.facebook.com/', enabled: true },
+                        instagram: { url: 'https://www.instagram.com/', enabled: true },
+                        twitter: { url: 'https://x.com/', enabled: true },
+                        whatsapp: { url: 'https://wa.me/', enabled: true },
+                        telegram: { url: 'https://t.me/', enabled: true }
+                    }
                 }
             });
+        }
+
+        // Asegurar que socialNetworks exista para registros viejos
+        if (!settings.socialNetworks) {
+            settings.socialNetworks = {
+                facebook: { url: 'https://www.facebook.com/', enabled: true },
+                instagram: { url: 'https://www.instagram.com/', enabled: true },
+                twitter: { url: 'https://x.com/', enabled: true },
+                whatsapp: { url: 'https://wa.me/', enabled: true },
+                telegram: { url: 'https://t.me/', enabled: true }
+            };
         }
 
         res.json(settings);
@@ -39,8 +57,11 @@ export const updateSettings = async (req, res) => {
             demandRules,
             address,
             contactPhone,
+            contactPhoneEnabled,
             contactEmail,
-            openingHours
+            contactEmailEnabled,
+            openingHours,
+            socialNetworks
         } = req.body;
 
         let settings = await Settings.findOne({ key: 'general-settings' });
@@ -55,11 +76,17 @@ export const updateSettings = async (req, res) => {
         // Actualizamos campos de contacto si vienen
         if (address !== undefined) settings.address = address;
         if (contactPhone !== undefined) settings.contactPhone = contactPhone;
+        if (contactPhoneEnabled !== undefined) settings.contactPhoneEnabled = contactPhoneEnabled;
         if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+        if (contactEmailEnabled !== undefined) settings.contactEmailEnabled = contactEmailEnabled;
         if (openingHours !== undefined) settings.openingHours = openingHours;
 
         if (demandRules) {
             settings.demandRules = demandRules;
+        }
+
+        if (socialNetworks) {
+            settings.socialNetworks = socialNetworks;
         }
 
         const updatedSettings = await settings.save();

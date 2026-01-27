@@ -4,6 +4,10 @@
     margin: 0 auto;
 }
 
+.pageTitle {
+    color: var(--color-texto-terciario);
+}
+
 .card {
     background-color: #fff;
     padding: 20px;

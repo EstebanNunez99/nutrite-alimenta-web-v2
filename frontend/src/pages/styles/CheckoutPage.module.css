@@ -13,7 +13,7 @@
     text-align: center;
     margin-top: 0;
     margin-bottom: 2.5rem;
-    color: var(--color-texto-terciario);
+    color: var(--color-texto-secundario);
     /* Texto claro porque el fondo es oscuro */
     font-family: var(--fuente-titulos);
     font-size: 2.5rem;
@@ -23,6 +23,7 @@
 .formTitle {
     /* Específico para OrderTracking si usa esta clase */
     margin-bottom: 2rem;
+    color: var(--color-principal);
 }
 
 

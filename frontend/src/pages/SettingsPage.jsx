@@ -29,6 +29,20 @@ const SettingsPage = () => {
         setSettings({ ...settings, [e.target.name]: e.target.value });
     };
 
+    // Manejar cambios en redes sociales (url y enabled)
+    const handleSocialChange = (network, field, value) => {
+        setSettings(prev => ({
+            ...prev,
+            socialNetworks: {
+                ...prev.socialNetworks,
+                [network]: {
+                    ...prev.socialNetworks?.[network],
+                    [field]: value
+                }
+            }
+        }));
+    };
+
     // Guardar cambios generales (dirección, horarios, etc)
     const handleSaveInfo = async (e) => {
         e.preventDefault();
@@ -44,12 +58,13 @@ const SettingsPage = () => {
 
     return (
         <div className={styles.container}>
-            <h2 className={styles.pageTitle}>Configuración del Sistema</h2>
+            <h2 className={styles.pageTitle}> | Configuración del Sistema</h2>
 
             {/* TARJETA 2: INFORMACIÓN DE CONTACTO Y HORARIOS */}
             <div className={styles.card}>
                 <h3>Información del Negocio</h3>
                 <p style={{ marginBottom: '1rem', color: '#666' }}>Esta información se mostrará en el pie de página (Footer) de la web.</p>
+
 
                 <form onSubmit={handleSaveInfo} className={styles.formGrid}>
                     <div className={styles.formGroup}>
@@ -77,7 +92,7 @@ const SettingsPage = () => {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label>Teléfono / WhatsApp:</label>
+                        <label>Teléfono (General):</label>
                         <input
                             type="text"
                             name="contactPhone"
@@ -98,6 +113,34 @@ const SettingsPage = () => {
                             className={styles.input}
                             placeholder="Ej: info@tutienda.com"
                         />
+                    </div>
+
+                    {/* SECCIÓN REDES SOCIALES */}
+                    <div style={{ gridColumn: '1 / -1', marginTop: '1.5rem', marginBottom: '1rem', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+                        <h4 style={{ marginBottom: '1rem', color: '#555' }}>Redes Sociales y Enlaces</h4>
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                            {['facebook', 'instagram', 'twitter', 'whatsapp', 'telegram'].map(network => (
+                                <div key={network} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.5rem', background: '#f9f9f9', borderRadius: '8px' }}>
+                                    <div style={{ width: '100px', textTransform: 'capitalize', fontWeight: 'bold' }}>{network}</div>
+                                    <input
+                                        type="text"
+                                        value={settings.socialNetworks?.[network]?.url || ''}
+                                        onChange={(e) => handleSocialChange(network, 'url', e.target.value)}
+                                        className={styles.input}
+                                        placeholder={`URL de ${network}`}
+                                        style={{ flex: 1 }}
+                                    />
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={settings.socialNetworks?.[network]?.enabled || false}
+                                            onChange={(e) => handleSocialChange(network, 'enabled', e.target.checked)}
+                                        />
+                                        Mostrar
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div style={{ marginTop: '1rem' }}>

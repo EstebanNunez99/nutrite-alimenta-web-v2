@@ -2,7 +2,7 @@
 // frontend/src/components/layout/Header.jsx
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes, FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa"; // Iconos sociales
 import { FaXTwitter } from "react-icons/fa6"; // X icon
 import { useAuth } from "../../hooks/useAuth";
@@ -11,13 +11,21 @@ import styles from "./Header.module.css";
 
 // --- NavLinks Component ---
 const NavLinks = ({ onLinkClick, mobile = false }) => {
-  const { isAuthenticated, usuario } = useAuth();
+  const { isAuthenticated, usuario, logout } = useAuth(); // Agregamos logout
   const { itemCount, openCart } = useCart();
+  const navigate = useNavigate(); // Necesitamos navigate para redirigir
 
   const handleCartClick = (e) => {
     e.preventDefault();
     openCart();
     if (onLinkClick) onLinkClick();
+  };
+
+  const handleLogout = () => {
+    logout();
+    if (onLinkClick) onLinkClick();
+    // Redirección opcional
+    navigate('/auth');
   };
 
   const linkClass = styles.navLink;
@@ -27,9 +35,27 @@ const NavLinks = ({ onLinkClick, mobile = false }) => {
       {isAuthenticated && usuario.rol === "admin" ? (
         <>
           <Link to="/" className={linkClass} onClick={onLinkClick}>Inicio</Link>
-          <Link to="/admin" className={linkClass} onClick={onLinkClick}>Panel Admin</Link>
+          <Link to="/admin" className={linkClass} onClick={onLinkClick}>Panel Principal</Link>
+
+          {/* Atajos MÓVILES para Admin (Solo visibles en menú hamburguesa) */}
+          {mobile && (
+            <>
+              <Link to="/admin/products" className={linkClass} onClick={onLinkClick} style={{ fontSize: '0.9em', opacity: 0.8 }}>📦 Productos</Link>
+              <Link to="/admin/sales-history" className={linkClass} onClick={onLinkClick} style={{ fontSize: '0.9em', opacity: 0.8 }}>💰 Ventas</Link>
+              <Link to="/admin/orders/manual" className={linkClass} onClick={onLinkClick} style={{ fontSize: '0.9em', opacity: 0.8 }}>+ Nueva Venta</Link>
+            </>
+          )}
+
           <Link to="/admin/settings" className={linkClass} onClick={onLinkClick}>Configuración</Link>
-          <Link to="/perfil" className={linkClass} onClick={onLinkClick}>Mi Perfil</Link>
+
+          {/* Botón de Cerrar Sesión */}
+          <button
+            className={linkClass}
+            onClick={handleLogout}
+            style={{ color: '#ff6b6b' }} // Un rojo suave para destacar "salir"
+          >
+            Cerrar Sesión
+          </button>
         </>
       ) : (
         <>

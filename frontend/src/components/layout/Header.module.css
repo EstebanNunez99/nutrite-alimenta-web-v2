@@ -144,6 +144,14 @@
 .mobileNavLinks a {
   font-size: 1.5rem;
   color: var(--color-texto-terciario) !important;
+  text-decoration: none;
+  /* Linita sutil */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+  width: 100%;
+  /* Para que la linea ocupe todo el ancho si se quiere, o width fit-content si solo el texto */
+  text-align: right;
+  /* Asegurar alineación */
 }
 
 /* Redes sociales (Opcionalmente ocultas o integradas si se pidieran) */
