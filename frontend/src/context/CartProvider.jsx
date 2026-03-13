@@ -74,8 +74,17 @@ const CartProvider = ({ children }) => {
 
             if (itemIndex > -1) {
                 // Si ya existe (mismo prod y mismo comentario), actualizamos la cantidad
-                newItems[itemIndex].cantidad += quantity;
+                const newQuantity = newItems[itemIndex].cantidad + quantity;
+                if (product.tipo !== 'bajo_demanda' && newQuantity > product.stock) {
+                    toast.error(`Por el momento solo tenemos disponible ${product.stock} unidades de este producto.`);
+                    return;
+                }
+                newItems[itemIndex].cantidad = newQuantity;
             } else {
+                if (product.tipo !== 'bajo_demanda' && quantity > product.stock) {
+                    toast.info(`Por el momento solo tenemos disponible ${product.stock} unidades de este producto.`);
+                    return;
+                }
                 // Si no existe, lo añadimos al array
                 newItems.push({
                     // Guardamos solo los datos necesarios
@@ -130,11 +139,16 @@ const CartProvider = ({ children }) => {
         }
 
         try {
-            // Misma limitación: actualiza todos los de ese producto si no distinguimos comentario.
-            // Por ahora actualizamos por ID.
-            const newItems = cart.items.map(item =>
-                item.producto._id === productId ? { ...item, cantidad: newQuantity } : item
-            );
+            const newItems = cart.items.map(item => {
+                if (item.producto._id === productId) {
+                    if (item.producto.tipo !== 'bajo_demanda' && newQuantity > item.producto.stock) {
+                        toast.error(`Solo hay ${item.producto.stock} unidades disponibles.`);
+                        return item; // devolver sin cambios
+                    }
+                    return { ...item, cantidad: newQuantity };
+                }
+                return item;
+            });
             setCart({ ...cart, items: newItems });
         } catch (error) {
             console.error("Error al actualizar cantidad:", error);

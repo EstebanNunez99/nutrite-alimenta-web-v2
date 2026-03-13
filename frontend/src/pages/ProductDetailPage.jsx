@@ -63,13 +63,11 @@ const ProductDetailPage = () => {
                         {product.tipo === 'bajo_demanda' ? (
                             <span>Disponibilidad: <strong style={{ color: '#e67e22' }}>Bajo Demanda (Producción)</strong></span>
                         ) : (
-                            <span>Disponible: {(product.stock - product.stockComprometido)}</span>
+                            <span>Disponible: {product.stock}</span>
                         )}
                     </div>
 
-                    {console.log(product.stockComprometido)}
-
-                    {(product.tipo === 'bajo_demanda' || (product.stock - product.stockComprometido) > 0) && (
+                    {(product.tipo === 'bajo_demanda' || product.stock > 0) && (
                         <div className={styles.actions}>
                             <div className={styles.quantityControl}>
                                 <label htmlFor="quantity">Cantidad:</label>
@@ -79,12 +77,12 @@ const ProductDetailPage = () => {
                                     onChange={(e) => setQuantity(Number(e.target.value))}
                                     className={styles.quantitySelect}
                                 >
-                                    {/* Si es bajo demanda mostramos una lista fija (ej. 1 a 20), sino basado en stock */}
+                                     {/* Si es bajo demanda mostramos una lista fija (ej. 1 a 20), sino basado en stock */}
                                     {product.tipo === 'bajo_demanda'
                                         ? [...Array(20).keys()].map(x => (
                                             <option key={x + 1} value={x + 1}>{x + 1}</option>
                                         ))
-                                        : [...Array((product.stock - product.stockComprometido)).keys()].slice(0, 10).map(x => (
+                                        : [...Array(product.stock).keys()].slice(0, 10).map(x => (
                                             <option key={x + 1} value={x + 1}>{x + 1}</option>
                                         ))
                                     }

@@ -57,7 +57,6 @@ const ProductCard = ({ product, onClick }) => {
                 <div className={styles.cardFooter}>
                     <div className={styles.priceContainer}>
                         <span className={styles.cardPrice}>{formattedPrice}</span>
-                        <span className={styles.taxInfo}>Sin impuestos nacionales</span>
                     </div>
 
                     {/* El botón pequeño aún puede funcionar para añadir 1 rápido, o quitarse si se prefiere solo modal */}
