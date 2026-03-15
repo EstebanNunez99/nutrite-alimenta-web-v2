@@ -72,7 +72,7 @@ const GuestHomePage = () => {
                 setEditForm({
                     heroTitle: configData?.heroTitle || 'EL SABOR DE LO\nSALUDABLE',
                     heroSubtitle: configData?.heroSubtitle || 'Disfrutamos de brindar una experiencia gastronómica única, donde calidad, sabor y salud se unen. Gracias a nuestros clientes, seguimos creciendo día a día. ¡Elegí lo saludable!',
-                    bannerImage: configData?.bannerImage || 'https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png',
+                    bannerImage: configData?.bannerImage || '',
                     promoMessage: configData?.promoMessage || '',
                     featuredProducts: currentFeaturedIds
                 });
@@ -198,12 +198,14 @@ const GuestHomePage = () => {
                     {/* IZQUIERDA: IMAGEN/BANNER */}
                     <div className={styles.heroLeft}>
                         <div style={{ position: 'relative' }}>
-                            <img
-                                src={isEditing ? editForm.bannerImage : (config?.bannerImage || 'https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png')}
-                                alt="Nutrirte Alimenta Banner"
-                                className={styles.heroLogo}
-                                style={{ borderRadius: '12px', objectFit: 'cover' }}
-                            />
+                            {(isEditing ? editForm.bannerImage : config?.bannerImage) && (
+                                <img
+                                    src={isEditing ? editForm.bannerImage : config.bannerImage}
+                                    alt="Nutrirte Alimenta Banner"
+                                    className={styles.heroLogo}
+                                    style={{ borderRadius: '12px', objectFit: 'cover' }}
+                                />
+                            )}
                             {isEditing && (
                                 <div style={{ position: 'absolute', bottom: '10px', left: '10px', right: '10px', background: 'rgba(255,255,255,0.9)', padding: '10px', borderRadius: '8px' }}>
                                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '5px' }}>Cambiar Imagen:</label>
