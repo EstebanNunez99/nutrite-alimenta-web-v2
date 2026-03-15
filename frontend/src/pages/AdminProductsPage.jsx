@@ -96,7 +96,7 @@ const AdminProductsPage = () => {
 
     return (
         <div className={styles.container}>
-            <p className={styles.aviso}>Pronto mas acciones disponibles</p>
+            {/* <p className={styles.aviso}>Pronto mas acciones disponibles</p> */}
             <h2>Gestión de Productos</h2>
 
             <div className={styles.controlsContainer}>

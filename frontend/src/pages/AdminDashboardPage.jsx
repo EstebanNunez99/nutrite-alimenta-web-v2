@@ -70,30 +70,30 @@ const AdminDashboardPage = () => {
             {/* SECCIÓN DE MÉTRICAS */}
             {loading ? <div className={styles.loading}>Cargando métricas...</div> : (
                 <div className={styles.statsGrid}>
-                    <div className={styles.statCard} style={{ borderLeftColor: '#4CAF50' }}>
+                    <Link to="/admin/sales-history" className={styles.statCard} style={{ borderLeftColor: '#4CAF50' }}>
                         <h3>Ventas de Hoy</h3>
                         <div className={styles.statValue}>{formatCurrency(stats.ventasHoy)}</div>
                         <div className={styles.statSubtext}>Ingresos registrados hoy</div>
-                    </div>
+                    </Link>
 
-                    <div className={styles.statCard} style={{ borderLeftColor: '#FF9800' }}>
+                    <Link to="/admin/sales-history" className={styles.statCard} style={{ borderLeftColor: '#FF9800' }}>
                         <h3>Pedidos Pendientes</h3>
                         <div className={styles.statValue}>{stats.pedidosPendientes}</div>
                         <div className={styles.statSubtext}>Requieren tu atención</div>
-                    </div>
+                    </Link>
 
-                    <div className={styles.statCard} style={{ borderLeftColor: '#F44336' }}>
+                    <Link to="/admin/products" className={styles.statCard} style={{ borderLeftColor: '#F44336' }}>
                         <h3>Alerta Stock</h3>
                         <div className={styles.statValue}>{stats.productosBajoStock}</div>
                         <div className={styles.statSubtext}>Productos con &lt; 5 unidades (Pág 1)</div>
-                    </div>
+                    </Link>
 
                     {/* Placeholder para futura métrica */}
-                    <div className={styles.statCard} style={{ borderLeftColor: '#2196F3' }}>
+                    <Link to="/admin/products" className={styles.statCard} style={{ borderLeftColor: '#2196F3' }}>
                         <h3>Total Productos</h3>
                         <div className={styles.statValue}>{stats.totalProductos || '-'}</div>
                         <div className={styles.statSubtext}>Activos en catálogo</div>
-                    </div>
+                    </Link>
                 </div>
             )}
 

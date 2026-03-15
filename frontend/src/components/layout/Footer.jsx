@@ -350,7 +350,7 @@ const Footer = () => {
         <p>
           &copy; {new Date().getFullYear()} <span> Todos los derechos reservados. </span> Diseñado y desarrollado por Esteban Nuñez.
         </p>
-        <Link to="/acerca-de">Acerca de EN S.A</Link>
+        <Link to="/acerca-de">Acerca de EN S.A.</Link>
       </div>
     </footer>
   );

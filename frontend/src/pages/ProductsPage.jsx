@@ -1,7 +1,7 @@
 //revisado
 //verificado
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaSearch, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaSearch, FaClock, FaMapMarkerAlt, FaExclamationTriangle } from 'react-icons/fa';
 import { getAllProducts, getAllCategories } from '../services/productService';
 import { getSettings } from '../services/settingsService'; // <-- IMPORTADO
 import ProductCard from '../features/products/ProductCard';
@@ -114,7 +114,6 @@ const ProductsPage = () => {
     };
 
     if (loading && products.length === 0) return <Spinner />;
-    if (error) return <div className={styles.message}>{error}</div>;
 
     return (
         <div className={styles.pageWrapper}>
@@ -175,7 +174,16 @@ const ProductsPage = () => {
                 </div>
 
                 {/* GRILLA DE PRODUCTOS */}
-                {loading ? <Spinner /> : (
+                {loading ? <Spinner /> : error ? (
+                    <div className={styles.errorState}>
+                        <FaExclamationTriangle className={styles.errorIcon} />
+                        <h3 className={styles.errorMessage}>Oops! Algo salió mal.</h3>
+                        <p className={styles.errorInstruction}>{error} <br/> Recargue la pagina por favor.</p>
+                        <button onClick={() => window.location.reload()} className={styles.resetButton}>
+                            Recargar Página
+                        </button>
+                    </div>
+                ) : (
                     products.length > 0 ? (
                         <>
                             <h2 className={styles.sectionTitle}>

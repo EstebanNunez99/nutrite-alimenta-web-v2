@@ -176,7 +176,7 @@ const AdminSalesHistoryPage = () => {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h2>Historial de Ventas</h2>
+                <h2 className={styles.sectionTitle}>Historial de Ventas</h2>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <Button onClick={downloadCSV} variant="secondary" style={{ backgroundColor: '#28a745', borderColor: '#28a745', color: 'white' }}>
                         📥 Exportar Excel/CSV
