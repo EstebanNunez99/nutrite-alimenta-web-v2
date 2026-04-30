@@ -1,0 +1,49 @@
+
+services:
+  # 1. La Base de Datos
+  base-datos:
+    image: mongo:4.4
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - nutrirte_mongo_data:/data/db
+
+  # 2. Tu API de Node
+  api-backend:
+    build: ./backend      # Le dice a Docker: "Andá a esta carpeta y leé el Dockerfile"
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - base-datos
+    environment:
+      # Acá vas a poner las variables de entorno que tenías en Render (ej. claves de correos)
+      - MONGO_URI=mongodb://base-datos:27017/nutrirte
+      - PORT=5000
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_USER=${EMAIL_USER}
+      - FRONTEND_URL=http://localhost:3000
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - DB_NAME=nutrirte-v2
+
+  # 3. Tu Tienda en React
+  web-frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:5000/api
+        - VITE_CLOUDINARY_UPLOAD_PRESET=${VITE_CLOUDINARY_UPLOAD_PRESET}
+        - VITE_CLOUDINARY_CLOUD_NAME=${VITE_CLOUDINARY_CLOUD_NAME}
+    restart: always
+    ports:
+      - "3000:80"         # Nivelamos el puerto 80 del Nginx interno al 3000 de la Acer
+    depends_on:
+      - api-backend
+
+# El disco duro inmortal para MongoDB
+volumes:
+  nutrirte_mongo_data:

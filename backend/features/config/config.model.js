@@ -11,7 +11,8 @@ const homeConfigSchema = mongoose.Schema({
     },
     bannerImage: {
         type: String,
-        default: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop'
+        // este es el viejo default: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2574&auto=format&fit=crop'
+        default: 'https://res.cloudinary.com/drk7ixxdm/image/upload/v1773599772/slqasyouipbiinser0b5.png'
     },
     // Podriamos agregar mas cosas a futuro, como "Promo del mes"
     promoMessage: {

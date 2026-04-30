@@ -1,2 +1,4 @@
 logs/
 clearDB.js
+.env
+.env.*
