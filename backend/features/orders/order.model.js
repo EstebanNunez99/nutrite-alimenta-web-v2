@@ -9,6 +9,10 @@ const orderSchema = new mongoose.Schema({
         telefono: { type: String, required: true, trim: true } // Ahora es obligatorio
         // --- FIN CAMBIO ---
     },
+    orderNumber: {
+        type: Number,
+        unique: true
+    },
     items: [
         {
             nombre: { type: String, required: true },

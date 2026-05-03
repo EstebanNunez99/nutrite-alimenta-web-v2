@@ -147,7 +147,7 @@ const OrderDetailPage = () => {
     return (
         <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '2rem', backgroundColor: '#fff', borderRadius: '8px', boxShadow: 'var(--sombra-suave)' }}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Detalle de la Orden #{order._id}</h1>
+                <h1 className={styles.title}>Detalle de la Orden #{order.orderNumber || order._id.slice(-6).toUpperCase()}</h1>
                 {usuario && usuario.rol === 'admin' && (
                     <Button onClick={sendEmail} variant="primary" style={{ marginLeft: 'auto' }}>
                         📧 Enviar Email
@@ -213,10 +213,16 @@ const OrderDetailPage = () => {
             <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>Dirección de Envío</h4>
             {/* ... (renderizado de dirección - sin cambios) ... */}
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                <p style={{ margin: '0.5rem 0' }}><strong>Dirección:</strong> {order.shippingAddress.address}</p>
-                <p style={{ margin: '0.5rem 0' }}><strong>Ciudad:</strong> {order.shippingAddress.city}</p>
-                <p style={{ margin: '0.5rem 0' }}><strong>Código Postal:</strong> {order.shippingAddress.postalCode}</p>
-                <p style={{ margin: '0.5rem 0' }}><strong>País:</strong> {order.shippingAddress.country}</p>
+                {order.shippingAddress.address === 'Retiro en local' ? (
+                    <p style={{ margin: '0.5rem 0' }}><strong>Entrega:</strong> Retira en el domicilio o en el gimnasio según lo coordinado.</p>
+                ) : (
+                    <>
+                        <p style={{ margin: '0.5rem 0' }}><strong>Dirección:</strong> {order.shippingAddress.address}</p>
+                        <p style={{ margin: '0.5rem 0' }}><strong>Ciudad:</strong> {order.shippingAddress.city}</p>
+                    </>
+                )}
+                {/* <p style={{ margin: '0.5rem 0' }}><strong>Código Postal:</strong> {order.shippingAddress.postalCode}</p>
+                <p style={{ margin: '0.5rem 0' }}><strong>País:</strong> {order.shippingAddress.country}</p> */}
             </div>
             <hr />
 
@@ -404,6 +410,15 @@ const OrderDetailPage = () => {
                         {/* --- FIN CAMBIO --- */}
                     </div>
                 )}
+            </div>
+
+            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <Button onClick={() => window.location.href = '/'} variant="secondary">
+                    Volver al Inicio
+                </Button>
+                <Button onClick={() => window.location.href = '/productos'} variant="primary">
+                    Volver al Catálogo
+                </Button>
             </div>
         </div>
     );

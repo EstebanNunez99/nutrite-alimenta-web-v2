@@ -87,7 +87,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
                     <div className={styles.commentsContainer}>
                         <textarea
                             className={styles.commentsInput}
-                            placeholder="Agrega notas (sin cebolla, salsa aparte...)"
+                            placeholder="Agrega notas (sin coco rallado, sin chips de choco, ...)"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                         />

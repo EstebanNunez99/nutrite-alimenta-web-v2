@@ -98,8 +98,13 @@ export const createOrder = async (req, res) => {
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
+        // Obtener el último orderNumber y sumar 1
+        const lastOrder = await Order.findOne({}, {}, { sort: { 'orderNumber': -1 } });
+        const nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1000;
+
         const order = new Order({
             customerInfo: customerInfo,
+            orderNumber: nextOrderNumber,
             items: processedItems,
             shippingAddress,
             paymentMethod,
@@ -320,8 +325,13 @@ export const createManualOrder = async (req, res) => {
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
+        // Obtener el último orderNumber y sumar 1
+        const lastOrder = await Order.findOne({}, {}, { sort: { 'orderNumber': -1 } });
+        const nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1000;
+
         const order = new Order({
             customerInfo: customerInfo,
+            orderNumber: nextOrderNumber,
             items: items.map(item => ({
                 nombre: item.nombre,
                 cantidad: item.cantidad,
@@ -383,10 +393,16 @@ export const trackOrder = async (req, res) => {
         if (!orderId || !email) {
             return res.status(400).json({ msg: 'Se requiere ID de orden y email.' });
         }
-        const order = await Order.findOne({
-            _id: orderId,
-            'customerInfo.email': email.toLowerCase()
-        });
+        
+        // Search by orderNumber if it's a number, else by _id
+        let query = { 'customerInfo.email': email.toLowerCase() };
+        if (!isNaN(orderId)) {
+            query.orderNumber = Number(orderId);
+        } else {
+            query._id = orderId;
+        }
+
+        const order = await Order.findOne(query);
         if (order) {
             res.json(order);
         } else {

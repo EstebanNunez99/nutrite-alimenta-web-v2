@@ -1,11 +1,13 @@
 //verificado
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../hooks/useCart.js";
 import styles from "./styles/CartPage.module.css";
 import Button from "../components/ui/Button";
 import Spinner from "../components/ui/Spinner";
-import useDocumentTitle from '../hooks/useDocumentTitle'
+import useDocumentTitle from '../hooks/useDocumentTitle';
+import { getHomeConfig } from '../services/configService';
+import ProductCard from '../features/products/ProductCard';
 
 const CartPage = () => {
 
@@ -13,6 +15,25 @@ const CartPage = () => {
   // 1. IMPORTAMOS LA NUEVA FUNCIÓN DEL HOOK
   const { cart, removeItem, updateItemQuantity, loading, itemCount } =
     useCart();
+
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+        try {
+            const configData = await getHomeConfig();
+            if (configData && configData.featuredProducts) {
+                setFeaturedProducts(configData.featuredProducts.slice(0, 4));
+            }
+        } catch (error) {
+            console.error("Error fetching featured products", error);
+        } finally {
+            setLoadingFeatured(false);
+        }
+    };
+    fetchFeatured();
+  }, []);
 
   if (loading) {
     return <Spinner />;
@@ -112,13 +133,38 @@ const CartPage = () => {
             <span>Total</span>
             <span>{formattedTotal}</span>
           </div>
-          <Link to="/checkout">
-            <Button variant="primary">
-              Proceder al Pago
-            </Button>
-          </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+            <Link to="/checkout" style={{ width: '100%' }}>
+              <Button variant="primary" style={{ width: '100%' }}>
+                Proceder al Pago
+              </Button>
+            </Link>
+            <Link to="/productos" style={{ width: '100%' }}>
+              <Button variant="secondary" style={{ width: '100%' }}>
+                Volver al menú
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* --- SECCIÓN DE DESTACADOS --- */}
+      {!loadingFeatured && featuredProducts.length > 0 && (
+        <div style={{ marginTop: '4rem' }}>
+            <h3 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--color-principal)' }}>
+                Por si te tienta algo más… 😉
+            </h3>
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+                gap: '20px' 
+            }}>
+                {featuredProducts.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                ))}
+            </div>
+        </div>
+      )}
     </div>
   );
 };

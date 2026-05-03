@@ -1,7 +1,7 @@
 /* CheckoutPage.module.css - Rediseño Global */
 
 .pageContainer {
-    max-width: 1100px;
+    max-width: 1300px;
     margin: 2rem auto;
     padding: 2rem;
     min-height: 80vh;
@@ -13,7 +13,7 @@
     text-align: center;
     margin-top: 0;
     margin-bottom: 2.5rem;
-    color: var(--color-texto-secundario);
+    color: var(--color-texto-terciario);
     /* Texto claro porque el fondo es oscuro */
     font-family: var(--fuente-titulos);
     font-size: 2.5rem;
@@ -27,17 +27,10 @@
 }
 
 
-/* --- La grilla principal de 2 columnas --- */
+/* --- Contenedor Principal --- */
 .checkoutGrid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-}
-
-@media (min-width: 992px) {
-    .checkoutGrid {
-        grid-template-columns: 2fr 1fr;
-    }
+    display: block;
+    width: 100%;
 }
 
 .aviso {
@@ -50,32 +43,97 @@
     margin-bottom: 1.5rem;
 }
 
-/* --- Estilo de "Tarjeta" --- */
-.shippingForm,
-.orderSummary,
-.form {
-    /* Agregado .form para OrderTrackingContainer */
+/* --- Estilo de Contenedor Principal --- */
+.shippingForm {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+@media (min-width: 992px) {
+    .shippingForm {
+        background-color: var(--color-superficie);
+        padding: 2rem;
+        border-radius: var(--borde-radio);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+}
+
+/* --- Estilo de "Tarjeta" (Solo order summary o uso externo) --- */
+.orderSummary {
     background-color: var(--color-superficie);
     /* #e9e9e9 (Gris claro/blanco) */
     padding: 2rem;
     border-radius: var(--borde-radio);
-    box-shadow: var(--sombra-suave);
-    border: none;
+    box-shadow: none;
+    border: 1px solid #eee;
     color: var(--color-texto-principal);
     /* Texto oscuro dentro de las tarjetas */
 }
 
 /* Si OrderTrackingPage usa .form directamente como contenedor carta */
 .pageContainer .form {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
-    /* Centrado para tracking */
-    background-color: white;
-    /* O superficie */
 }
 
-.shippingForm h3,
 .orderSummary h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 1rem;
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+    font-size: 1.4rem;
+}
+
+/* --- Grilla de Secciones (Masonry/Flex/Grid) --- */
+.sectionsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+@media (min-width: 992px) {
+    .sectionsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+.checkoutSection {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: var(--borde-radio);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.checkoutSection h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 1rem;
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+    font-size: 1.4rem;
+}
+
+.totalSectionCard,
+.paymentSectionCard {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: var(--borde-radio);
+    border: 1px solid #e0e0e0;
+    margin-top: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.paymentSectionCard h3 {
     margin-top: 0;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -94,9 +152,7 @@
 
 /* --- Inputs --- */
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+    display: block;
 }
 
 /* Esto afectará a los Inputs si usan clases directas, 

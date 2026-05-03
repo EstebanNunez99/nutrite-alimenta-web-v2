@@ -196,52 +196,55 @@ const CheckoutPage = () => {
             <div className={styles.checkoutGrid}>
                 <div className={styles.shippingForm}>
                     <form onSubmit={handlePlaceOrder} className={styles.form}>
+                        <div className={styles.sectionsGrid}>
+                            <div className={styles.checkoutSection}>
+                                <h3>1. Datos Personales</h3>
+                                <Input label="Nombre" name="nombre" value={customerInfo.nombre} onChange={onCustomerChange} required />
+                                <Input label="Email" type="email" name="email" value={customerInfo.email} onChange={onCustomerChange} required />
+                                <Input label="Teléfono" type="tel" name="telefono" value={customerInfo.telefono} onChange={onCustomerChange} required placeholder="Obligatorio para coordinar" />
+                            </div>
 
-                        <h3>1. Datos Personales</h3>
-                        <Input label="Nombre" name="nombre" value={customerInfo.nombre} onChange={onCustomerChange} required />
-                        <Input label="Email" type="email" name="email" value={customerInfo.email} onChange={onCustomerChange} required />
-                        <Input label="Teléfono" type="tel" name="telefono" value={customerInfo.telefono} onChange={onCustomerChange} required placeholder="Obligatorio para coordinar" />
-
-                        {/* Selección de Método de Entrega (RF-007) */}
-                        <h3 className="mt-4">2. Método de Entrega</h3>
-                        <div className={styles.radioGroup}>
-                            <label>
-                                <input type="radio" name="deliveryMethod" value="envio" checked={deliveryMethod === 'envio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
-                                Envío a Domicilio (Uber Motos)
-                            </label>
-                            <label>
-                                <input type="radio" name="deliveryMethod" value="retiro_domicilio" checked={deliveryMethod === 'retiro_domicilio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
-                                Retiro en Domicilio
-                            </label>
-                            <label>
-                                <input type="radio" name="deliveryMethod" value="retiro_gimnasio" checked={deliveryMethod === 'retiro_gimnasio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
-                                Retiro en Gimnasio
-                            </label>
-                        </div>
-
-                        {deliveryMethod === 'envio' && (
-                            <div className={styles.addressSection}>
-                                <Input label="Dirección de Envío" name="address" value={shippingAddress.address} onChange={onAddressChange} required />
-                                <Input label="Ciudad" name="city" value={shippingAddress.city} onChange={onAddressChange} required />
-
-                                <div className={styles.aviso} style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '10px', borderRadius: '5px', marginTop: '10px', fontSize: '0.9rem' }}>
-                                    <strong>Nota sobre el envío:</strong> Los envíos se realizan con Uber Motos.
-                                    No contamos con cotización en tiempo real, por lo que el costo del envío corre por
-                                    cuenta del cliente al momento de recibir el pedido. ¡No hay límite de distancia!
+                            <div className={styles.checkoutSection}>
+                                <h3>2. Método de Entrega</h3>
+                                <div className={styles.radioGroup}>
+                                    <label>
+                                        <input type="radio" name="deliveryMethod" value="envio" checked={deliveryMethod === 'envio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
+                                        Envío a Domicilio (Uber Motos)
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="deliveryMethod" value="retiro_domicilio" checked={deliveryMethod === 'retiro_domicilio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
+                                        Retiro en Domicilio
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="deliveryMethod" value="retiro_gimnasio" checked={deliveryMethod === 'retiro_gimnasio'} onChange={(e) => setDeliveryMethod(e.target.value)} />
+                                        Retiro en Gimnasio
+                                    </label>
                                 </div>
-                            </div>
-                        )}
 
-                        {(deliveryMethod === 'retiro_domicilio' || deliveryMethod === 'retiro_gimnasio') && (
-                            <div className={styles.aviso} style={{ backgroundColor: '#d1ecf1', color: '#0c5460', padding: '10px', borderRadius: '5px', marginTop: '10px' }}>
-                                <strong>¡Genial!</strong> Nos vamos a contactar con vos para coordinar la entrega.
-                            </div>
-                        )}
+                                {deliveryMethod === 'envio' && (
+                                    <div className={styles.addressSection}>
+                                        <Input label="Dirección de Envío" name="address" value={shippingAddress.address} onChange={onAddressChange} required />
+                                        <Input label="Ciudad" name="city" value={shippingAddress.city} onChange={onAddressChange} required />
 
-                        {/* Lógica de Fechas e Items Mixtos (RF-001/006) */}
+                                        <div className={styles.aviso} style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '10px', borderRadius: '5px', marginTop: '10px', fontSize: '0.9rem' }}>
+                                            <strong>Nota sobre el envío:</strong> Los envíos se realizan con Uber Motos.
+                                            No contamos con cotización en tiempo real, por lo que el costo del envío corre por
+                                            cuenta del cliente al momento de recibir el pedido. ¡No hay límite de distancia!
+                                        </div>
+                                    </div>
+                                )}
+
+                                {(deliveryMethod === 'retiro_domicilio' || deliveryMethod === 'retiro_gimnasio') && (
+                                    <div className={styles.aviso} style={{ backgroundColor: '#d1ecf1', color: '#0c5460', padding: '10px', borderRadius: '5px', marginTop: '10px' }}>
+                                        <strong>¡Genial!</strong> Nos vamos a contactar con vos para coordinar la entrega.
+                                    </div>
+                                )}
+                            </div>
+
+                        {/* Lógica de Fechas e Items Mixtos (RF-001/006) en UNA sola tarjeta */}
                         {demandItems.length > 0 && (
-                            <div className={styles.demandSection}>
-                                <h3 className="mt-4">3. Fecha de Entrega (Productos Bajo Demanda)</h3>
+                            <div className={styles.checkoutSection}>
+                                <h3>3. Fecha de Entrega</h3>
                                 <p className={styles.alertInfo}>Tienes productos que se elaboran bajo demanda ({demandItems.map(i => i.nombre).join(', ')}).</p>
 
                                 <label className={styles.selectLabel}>Selecciona cuándo quieres recibir/retirar:</label>
@@ -259,42 +262,48 @@ const CheckoutPage = () => {
                                 ) : (
                                     <p className={styles.errorText}>No hay fechas disponibles próximas (Cierres de pedido pasados).</p>
                                 )}
+
+                                {/* Opciones de Envío Dividido (RF-006) si hay mix */}
+                                {stockItems.length > 0 && deliveryMethod === 'envio' && (
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--color-principal)', fontSize: '1.1rem' }}>Opciones de Envío Mixto:</h4>
+                                        <label className={styles.radioOption}>
+                                            <input type="radio" name="shippingType" value="unificado" checked={shippingType === 'unificado'} onChange={(e) => setShippingType(e.target.value)} />
+                                            <strong>Envio unificado:</strong> Recibir todo el {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'día seleccionado'} (1 Envío).
+                                        </label>
+                                        <br />
+                                        <label className={styles.radioOption}>
+                                            <input type="radio" name="shippingType" value="desglosado" checked={shippingType === 'desglosado'} onChange={(e) => setShippingType(e.target.value)} />
+                                            <strong>Envio separado:</strong> Stock YA, demanda luego (2 envíos).
+                                        </label>
+                                    </div>
+                                )}
                             </div>
                         )}
 
-                        {/* Opciones de Envío Dividido (RF-006) si hay mix */}
-                        {stockItems.length > 0 && demandItems.length > 0 && deliveryMethod === 'envio' && (
-                            <div className={styles.splitShipping}>
-                                <h4 className="mt-2">Opciones de Envío Mixto:</h4>
-                                <label className={styles.radioOption}>
-                                    <input type="radio" name="shippingType" value="unificado" checked={shippingType === 'unificado'} onChange={(e) => setShippingType(e.target.value)} />
-                                    <strong>Envio unificado:</strong> Recibir todo junto el {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'día seleccionado'} (1 Envío a pagar).
-                                </label>
-                                <br />
-                                <br />
-                                <label className={styles.radioOption}>
-                                    <input type="radio" name="shippingType" value="desglosado" checked={shippingType === 'desglosado'} onChange={(e) => setShippingType(e.target.value)} />
-                                    <strong>Envio por separado:</strong> Recibir productos en stock YA, y producto bajo demanda el día correspondiente. (⚠ Se abonarán 2 envíos).
-                                </label>
-                            </div>
-                        )}
-
-                        {/* Pago */}
-                        <h3 className="mt-4">4. Pago</h3>
-                        <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={styles.selectInput}>
-                            <option value="Transferencia">Transferencia Bancaria</option>
-                            <option value="Efectivo">Efectivo</option>
-                        </select>
-
-                        <div className={styles.totalSection}>
-                            <p>Subtotal: ${cartSubtotal}</p>
-                            <p>Envío: {deliveryMethod === 'envio' ? <span style={{ fontSize: '0.9em', color: '#666' }}>(A cargo del cliente)</span> : '$0'}</p>
-                            <h3>Total Productos: ${total} <small style={{ fontSize: '0.6em', fontWeight: 'normal' }}>+ Envío</small></h3>
                         </div>
 
-                        <Button type="submit" variant='primary' disabled={isProcessing} className={styles.confirmBtn}>
-                            {isProcessing ? 'Procesando...' : 'Confirmar Pedido'}
-                        </Button>
+                        {/* Pago (Ancho completo abajo) */}
+                        <div className={styles.checkoutSection + ' ' + styles.paymentSectionCard}>
+                            <h3>{demandItems.length > 0 ? '4.' : '3.'} Medio de Pago</h3>
+                            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={styles.selectInput}>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Mercado Pago">Mercado Pago</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.checkoutSection + ' ' + styles.totalSectionCard}>
+                            <div className={styles.totalSection}>
+                                <p>Subtotal: ${cartSubtotal}</p>
+                                <p>Envío: {deliveryMethod === 'envio' ? <span style={{ fontSize: '0.9em', color: '#666' }}>(A cargo del cliente)</span> : '$0'}</p>
+                                <h3>Total Productos: ${total} <small style={{ fontSize: '0.6em', fontWeight: 'normal' }}>+ Envío</small></h3>
+                            </div>
+
+                            <Button type="submit" variant='primary' disabled={isProcessing} className={styles.confirmBtn}>
+                                {isProcessing ? 'Procesando...' : 'Confirmar Pedido'}
+                            </Button>
+                        </div>
                     </form>
                 </div>
             </div>
