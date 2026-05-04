@@ -5,8 +5,8 @@ body,
   margin: 0;
   padding: 0;
   width: 100%;
-  /* ¡La clave para matar el scroll horizontal no deseado! */
-  overflow-x: hidden;
+  /* ¡La clave para matar el scroll horizontal no deseado sin romper sticky! */
+  overflow-x: clip;
 }
 
 /* Regla universal para un cálculo de tamaño predecible */

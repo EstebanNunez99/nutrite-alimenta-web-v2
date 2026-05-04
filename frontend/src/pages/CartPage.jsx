@@ -1,7 +1,8 @@
 //verificado
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart.js";
+import { useAuth } from "../hooks/useAuth.js";
 import styles from "./styles/CartPage.module.css";
 import Button from "../components/ui/Button";
 import Spinner from "../components/ui/Spinner";
@@ -21,6 +22,12 @@ const CartPage = () => {
   // 1. IMPORTAMOS LA NUEVA FUNCIÓN DEL HOOK
   const { cart, removeItem, updateItemQuantity, loading, itemCount } =
     useCart();
+  const { usuario } = useAuth();
+
+  // Bloquear acceso a admin
+  if (usuario && usuario.rol === 'admin') {
+      return <Navigate to="/admin" replace />;
+  }
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);

@@ -1,8 +1,9 @@
 // frontend/src/pages/CheckoutPage.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { toast } from 'react-toastify';
 import Button from '../components/ui/Button.jsx';
 import Input from '../components/ui/Input';
@@ -15,7 +16,13 @@ import { getSettings } from '../services/settingsService.js';
 const CheckoutPage = () => {
     useDocumentTitle('Checkout');
     const { cart, itemCount, checkout, loading } = useCart();
+    const { usuario } = useAuth();
     const navigate = useNavigate();
+
+    // Bloquear acceso a admin
+    if (usuario && usuario.rol === 'admin') {
+        return <Navigate to="/admin" replace />;
+    }
 
     // Estado del formulario de cliente y envío
     const [customerInfo, setCustomerInfo] = useState({ nombre: '', email: '', telefono: '' });
