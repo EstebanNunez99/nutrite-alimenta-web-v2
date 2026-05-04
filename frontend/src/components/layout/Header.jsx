@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBars, FaTimes, FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa"; // Iconos sociales
+import { FaBars, FaTimes, FaFacebookF, FaInstagram, FaTiktok, FaArrowLeft } from "react-icons/fa"; // Iconos sociales y de UI
 import { FaXTwitter } from "react-icons/fa6"; // X icon
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
@@ -97,8 +97,11 @@ const Header = () => {
       {/* SECCION IZQUIERDA: LOGO */}
       <div className={styles.logoSection}>
         <div className={styles.logoContainer}>
-          <Link to="/">
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '15px', textDecoration: 'none' }}>
             <img src="https://res.cloudinary.com/drk7ixxdm/image/upload/v1766147064/logo-nutrirte-v2_tm4wpo.png" alt="Logo" className={styles.logoImg} />
+            <h1 className={styles.headerTitle}>
+                NUTRIRTE<br/>ALIMENTA
+            </h1>
           </Link>
         </div>
       </div>
@@ -119,14 +122,19 @@ const Header = () => {
         {isMenuOpen ? <FaTimes /> : <FaBars />}
       </button>
 
-      {/* MOBILE MENU OVERLAY */}
+      {/* MOBILE MENU OVERLAY & DRAWER */}
       <div
-        className={`${styles.mobileMenu} ${isMenuOpen ? styles.isOpen : ""}`}
+        className={`${styles.mobileMenuOverlay} ${isMenuOpen ? styles.isOpen : ""}`}
         onClick={closeMenu}
       >
-        <nav className={styles.mobileNavLinks} onClick={(e) => e.stopPropagation()}>
-          <NavLinks onLinkClick={closeMenu} mobile />
-        </nav>
+        <div className={`${styles.mobileMenuDrawer} ${isMenuOpen ? styles.isOpen : ""}`} onClick={(e) => e.stopPropagation()}>
+          <button className={styles.closeDrawerButton} onClick={closeMenu} aria-label="Cerrar menú">
+            <FaArrowLeft />
+          </button>
+          <nav className={styles.mobileNavLinks}>
+            <NavLinks onLinkClick={closeMenu} mobile />
+          </nav>
+        </div>
       </div>
     </header>
   );

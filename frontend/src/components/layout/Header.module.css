@@ -49,6 +49,21 @@
   height: 50px;
 }
 
+.headerTitle {
+  font-family: var(--fuente-titulos);
+  color: var(--color-texto-terciario);
+  font-size: 1.2rem;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.scrolled .headerTitle {
+  font-size: 1rem;
+}
+
 /* SECCION DERECHA: NAV */
 .navSection {
   flex-grow: 1;
@@ -105,53 +120,74 @@
   padding-right: 1rem;
 }
 
-.mobileMenu {
+/* MOBILE MENU OVERLAY & DRAWER */
+.mobileMenuOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: var(--color-principal);
+  background-color: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
   z-index: 2000;
-  display: flex;
-  justify-content: flex-end;
-  /* Alineado a la derecha */
-  align-items: center;
-  /* Centrado vertical */
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s;
-  padding-right: 3rem;
-  /* Espacio desde el borde derecho */
+  transition: opacity 0.3s ease;
 }
 
-.mobileMenu.isOpen {
+.mobileMenuOverlay.isOpen {
   opacity: 1;
   pointer-events: all;
+}
+
+.mobileMenuDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 75%;
+  max-width: 320px;
+  height: 100vh;
+  background-color: var(--color-principal);
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobileMenuDrawer.isOpen {
+  transform: translateX(0);
+}
+
+.closeDrawerButton {
+  background: none;
+  border: none;
+  color: var(--color-texto-terciario);
+  font-size: 1.5rem;
+  cursor: pointer;
+  align-self: flex-start; /* Flecha a la izquierda */
+  margin-bottom: 2rem;
+  padding: 0;
 }
 
 .mobileNavLinks {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  text-align: right;
-  /* Texto a la derecha */
-  align-items: flex-end;
-  /* Items flex a la derecha */
+  text-align: left;
+  align-items: flex-start;
 }
 
 .mobileNavLinks button,
 .mobileNavLinks a {
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Un poco más chico que antes para que entre mejor */
   color: var(--color-texto-terciario) !important;
   text-decoration: none;
-  /* Linita sutil */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 0.5rem;
   width: 100%;
-  /* Para que la linea ocupe todo el ancho si se quiere, o width fit-content si solo el texto */
-  text-align: right;
-  /* Asegurar alineación */
+  text-align: left;
 }
 
 /* Redes sociales (Opcionalmente ocultas o integradas si se pidieran) */
@@ -166,8 +202,8 @@
   .header {
     height: 80px;
     /* Un poco más alto para que el logo respire */
-    /* Usamos relative para posicionar elementos absolutamente */
-    position: relative;
+    position: sticky; /* Cambiado a sticky para que no se mueva al scrollear */
+    top: 0;
     /* Cambiamos a space-between para Logo Izq - Menú Der */
     justify-content: space-between;
     padding: 0 1.5rem;

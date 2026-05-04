@@ -27,31 +27,31 @@ const CartPage = () => {
 
   useEffect(() => {
     const fetchFeatured = async () => {
-        try {
-            const configData = await getHomeConfig();
-            if (configData && configData.featuredProducts && configData.featuredProducts.length > 0) {
-                setFeaturedProducts(configData.featuredProducts.slice(0, 10));
-            } else {
-                // Fallback: Si no hay destacados, traemos los primeros 10 productos más nuevos
-                const data = await getAllProducts(1, 'createdAt_desc', '', '');
-                if (data && data.products) {
-                    setFeaturedProducts(data.products.slice(0, 10));
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching featured products", error);
-            // Fallback en caso de error de red con config
-            try {
-                const data = await getAllProducts(1, 'createdAt_desc', '', '');
-                if (data && data.products) {
-                    setFeaturedProducts(data.products.slice(0, 10));
-                }
-            } catch (fallbackError) {
-                console.error("Error al cargar productos de fallback", fallbackError);
-            }
-        } finally {
-            setLoadingFeatured(false);
+      try {
+        const configData = await getHomeConfig();
+        if (configData && configData.featuredProducts && configData.featuredProducts.length > 0) {
+          setFeaturedProducts(configData.featuredProducts.slice(0, 10));
+        } else {
+          // Fallback: Si no hay destacados, traemos los primeros 10 productos más nuevos
+          const data = await getAllProducts(1, 'createdAt_desc', '', '');
+          if (data && data.products) {
+            setFeaturedProducts(data.products.slice(0, 10));
+          }
         }
+      } catch (error) {
+        console.error("Error fetching featured products", error);
+        // Fallback en caso de error de red con config
+        try {
+          const data = await getAllProducts(1, 'createdAt_desc', '', '');
+          if (data && data.products) {
+            setFeaturedProducts(data.products.slice(0, 10));
+          }
+        } catch (fallbackError) {
+          console.error("Error al cargar productos de fallback", fallbackError);
+        }
+      } finally {
+        setLoadingFeatured(false);
+      }
     };
     fetchFeatured();
   }, []);
@@ -141,33 +141,6 @@ const CartPage = () => {
               </Button>
             </div>
           ))}
-
-          {/* --- SECCIÓN DE DESTACADOS --- */}
-          {!loadingFeatured && featuredProducts.length > 0 && (
-            <div style={{ marginTop: '3rem' }}>
-                <h3 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--color-texto-terciario)', textTransform: 'uppercase', fontFamily: 'var(--fuente-titulos)', fontSize: '2rem' }}>
-                    Por si te tienta algo más… 😉
-                </h3>
-                <Swiper
-                    modules={[Navigation, Pagination, Autoplay]}
-                    spaceBetween={20}
-                    slidesPerView={1}
-                    navigation
-                    pagination={{ clickable: true }}
-                    autoplay={{ delay: 3000, disableOnInteraction: false }}
-                    breakpoints={{
-                        800: { slidesPerView: 2 }
-                    }}
-                    style={{ paddingBottom: '40px' }} // Espacio para la paginación
-                >
-                    {featuredProducts.map((product) => (
-                        <SwiperSlide key={product._id}>
-                            <ProductCard product={product} />
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
-            </div>
-          )}
         </div>
 
         {/* --- COLUMNA DERECHA: RESUMEN DE COMPRA --- */}
@@ -194,7 +167,34 @@ const CartPage = () => {
             </Link>
           </div>
         </div>
+
       </div>
+      {/* --- SECCIÓN DE DESTACADOS --- */}
+      {!loadingFeatured && featuredProducts.length > 0 && (
+        <div style={{ marginTop: '3rem' }}>
+          <h3 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--color-texto-terciario)', textTransform: 'uppercase', fontFamily: 'var(--fuente-titulos)', fontSize: '2rem' }}>
+            Por si te tienta algo más… 😉
+          </h3>
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={1}
+            navigation
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            breakpoints={{
+              800: { slidesPerView: 2 }
+            }}
+            style={{ paddingBottom: '40px' }} // Espacio para la paginación
+          >
+            {featuredProducts.map((product) => (
+              <SwiperSlide key={product._id}>
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      )}
 
     </div>
   );

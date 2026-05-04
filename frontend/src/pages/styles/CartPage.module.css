@@ -34,10 +34,12 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    min-width: 0; /* Previene que Swiper rompa el CSS Grid */
+    min-width: 0;
+    /* Previene que Swiper rompa el CSS Grid */
 }
 
 .cartItem {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -97,8 +99,9 @@
 }
 
 .removeItemButton {
-    margin-left: auto;
-    align-self: flex-start;
+    position: absolute;
+    top: 15px;
+    right: 15px;
 }
 
 /* --- Resumen de Compra --- */
