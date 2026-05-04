@@ -61,7 +61,7 @@ const NavLinks = ({ onLinkClick, mobile = false }) => {
         <>
           <Link to="/" className={linkClass} onClick={onLinkClick}>Inicio</Link>          <Link to="/productos" className={linkClass} onClick={onLinkClick}>Catálogo</Link>
           {/* <Link to="/franquicias" className={linkClass} onClick={onLinkClick}>Franquíciate</Link> */}
-          <Link to="/seguimiento" className={linkClass} onClick={onLinkClick}>Mi Pedido</Link>
+          {/* <Link to="/seguimiento" className={linkClass} onClick={onLinkClick}>Mi Pedido</Link> */}
 
           <button className={linkClass} onClick={handleCartClick}>
             Carrito ({itemCount})
