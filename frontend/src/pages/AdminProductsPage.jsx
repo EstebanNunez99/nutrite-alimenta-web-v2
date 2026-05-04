@@ -143,7 +143,7 @@ const AdminProductsPage = () => {
 
                             return (
                                 <tr key={product._id} className={`${styles.tableRow} ${isLowStock ? styles.lowStockRow : ''}`}>
-                                    <td className={styles.tableCell}>{product._id.substring(0, 8)}...</td>
+                                    <td className={styles.tableCell}>{product._id}</td>
                                     <td className={styles.tableCell}>{product.nombre}</td>
                                     <td className={styles.tableCell}>${product.precio}</td>
                                     <td className={styles.tableCell}>

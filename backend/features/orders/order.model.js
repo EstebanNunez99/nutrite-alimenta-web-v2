@@ -1,17 +1,13 @@
 // backend/features/orders/order.model.js
 import mongoose from 'mongoose';
+import { getNextSequence } from '../../shared/utils/counter.model.js';
 
 const orderSchema = new mongoose.Schema({
+    _id: { type: Number },
     customerInfo: {
         nombre: { type: String, required: true, trim: true },
         email: { type: String, required: true, lowercase: true, trim: true },
-        // --- INICIO CAMBIO ---
-        telefono: { type: String, required: true, trim: true } // Ahora es obligatorio
-        // --- FIN CAMBIO ---
-    },
-    orderNumber: {
-        type: Number,
-        unique: true
+        telefono: { type: String, required: true, trim: true }
     },
     items: [
         {
@@ -19,9 +15,9 @@ const orderSchema = new mongoose.Schema({
             cantidad: { type: Number, required: true },
             imagen: { type: String, required: true },
             precio: { type: Number, required: true },
-            tipo: { type: String, required: true, default: 'stock' }, // Nuevo campo
+            tipo: { type: String, required: true, default: 'stock' },
             producto: {
-                type: mongoose.Schema.Types.ObjectId,
+                type: Number,
                 required: true,
                 ref: 'Product'
             }
@@ -30,10 +26,8 @@ const orderSchema = new mongoose.Schema({
     shippingAddress: {
         address: { type: String, required: true },
         city: { type: String, required: true },
-        // --- INICIO CAMBIO ---
-        postalCode: { type: String, required: false }, // Ya no es obligatorio
-        country: { type: String, required: false }    // Ya no es obligatorio
-        // --- FIN CAMBIO ---
+        postalCode: { type: String, required: false },
+        country: { type: String, required: false }
     },
     paymentMethod: {
         type: String,
@@ -74,34 +68,29 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['no_enviado', 'enviado', 'entregado'],
-        enum: ['no_enviado', 'enviado', 'entregado'],
         default: 'no_enviado'
     },
-    // --- NUEVO: Logística Avanzada (RF-006) ---
     shippingType: {
         type: String,
         enum: ['unificado', 'desglosado', 'retiro'],
-        default: 'unificado' // 'unificado' = todo sale el día de 'bajo demanda'
+        default: 'unificado'
     },
-    // Estado del sub-paquete "Stock Inmediato"
     statusInmediato: {
         type: String,
-        enum: ['pendiente', 'listo', 'en_camino', 'entregado', 'n/a'], // n/a si no hay productos de este tipo
+        enum: ['pendiente', 'listo', 'en_camino', 'entregado', 'n/a'],
         default: 'n/a'
     },
     fechaEntregaInmediato: {
         type: Date
     },
-    // Estado del sub-paquete "Bajo Demanda"
     statusBajoDemanda: {
         type: String,
-        enum: ['pendiente', 'produccion', 'listo', 'en_camino', 'entregado', 'n/a'], // n/a si no hay productos de este tipo
+        enum: ['pendiente', 'produccion', 'listo', 'en_camino', 'entregado', 'n/a'],
         default: 'n/a'
     },
     fechaEntregaBajoDemanda: {
         type: Date
     },
-    // ------------------------------------------
     deliveredAt: {
         type: Date
     },
@@ -113,6 +102,13 @@ const orderSchema = new mongoose.Schema({
 
 }, {
     timestamps: true
+});
+
+orderSchema.pre('save', async function(next) {
+    if (this.isNew) {
+        this._id = await getNextSequence('orderId');
+    }
+    next();
 });
 
 const Order = mongoose.model('Order', orderSchema);

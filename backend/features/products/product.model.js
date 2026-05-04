@@ -1,8 +1,10 @@
 //revisado
 
 import mongoose from 'mongoose';
+import { getNextSequence } from '../../shared/utils/counter.model.js';
 
 const productSchema = new mongoose.Schema({
+    _id: { type: Number },
     nombre: {
         type: String,
         required: [true, 'El nombre del producto es obligatorio.'],
@@ -49,7 +51,7 @@ const productSchema = new mongoose.Schema({
     },
     // Relacionamos el producto con el usuario (admin) que lo creó.
     vendedor: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Number,
         ref: 'User', // Hace referencia a nuestro modelo 'User'
         required: true
     }
@@ -57,6 +59,12 @@ const productSchema = new mongoose.Schema({
     timestamps: true // Crea automáticamente createdAt y updatedAt
 });
 
+productSchema.pre('save', async function(next) {
+    if (this.isNew) {
+        this._id = await getNextSequence('productId');
+    }
+    next();
+});
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

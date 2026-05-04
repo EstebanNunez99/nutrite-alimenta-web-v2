@@ -19,7 +19,7 @@ services:
       - base-datos
     environment:
       # Acá vas a poner las variables de entorno que tenías en Render (ej. claves de correos)
-      - MONGO_URI=mongodb://base-datos:27017/nutrirte
+      - MONGO_URI=${MONGO_URI}
       - PORT=5000
       - EMAIL_PASS=${EMAIL_PASS}
       - EMAIL_USER=${EMAIL_USER}

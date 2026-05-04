@@ -24,7 +24,6 @@ export const createProduct = async (req, res) => {
             precio,
             stock,
             categoria,
-            categoria,
             imagen,
             tipo,
             vendedor

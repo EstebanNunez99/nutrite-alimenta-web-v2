@@ -10,11 +10,6 @@ import { sendOrderNotification, sendDemandSummary } from '../../shared/utils/ema
 // @access  Public
 export const createOrder = async (req, res) => {
 
-    // --- CAMBIO: INICIO ELIMINACIÓN DE TRANSACCIÓN ---
-    // const session = await mongoose.startSession();
-    // session.startTransaction();
-    // --- FIN CAMBIO ---
-
     try {
         const {
             customerInfo,
@@ -98,13 +93,8 @@ export const createOrder = async (req, res) => {
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
-        // Obtener el último orderNumber y sumar 1
-        const lastOrder = await Order.findOne({}, {}, { sort: { 'orderNumber': -1 } });
-        const nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1000;
-
         const order = new Order({
             customerInfo: customerInfo,
-            orderNumber: nextOrderNumber,
             items: processedItems,
             shippingAddress,
             paymentMethod,
@@ -135,18 +125,12 @@ export const createOrder = async (req, res) => {
         res.status(201).json(createdOrder);
 
     } catch (error) {
-        // --- CAMBIO ---
-        // await session.abortTransaction(); // Eliminado
-        // --- FIN CAMBIO ---
+
         console.error(error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
 
     }
-    // --- CAMBIO ---
-    // finally {
-    //     session.endSession(); // Eliminado
-    // }
-    // --- FIN CAMBIO ---
+
 };
 
 // ... (Todas las demás funciones: getOrderById, getAllOrders, updateDeliveryStatus) ...
@@ -325,13 +309,8 @@ export const createManualOrder = async (req, res) => {
         const finalShippingCost = shippingCost || 0;
         const totalPrice = calculatedSubtotal + finalShippingCost;
 
-        // Obtener el último orderNumber y sumar 1
-        const lastOrder = await Order.findOne({}, {}, { sort: { 'orderNumber': -1 } });
-        const nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1000;
-
         const order = new Order({
             customerInfo: customerInfo,
-            orderNumber: nextOrderNumber,
             items: items.map(item => ({
                 nombre: item.nombre,
                 cantidad: item.cantidad,
@@ -373,19 +352,8 @@ export const createManualOrder = async (req, res) => {
         console.error(error);
         res.status(500).json({ msg: 'Error en el servidor', error: error.message });
     }
-    // --- CAMBIO ---
-    // finally {
-    //     session.endSession(); // Eliminado
-    // }
-    // --- FIN CAMBIO ---
 };
 
-
-// --- CAMBIO: INICIO ELIMINACIÓN DE CRON JOB ---
-// @desc    Disparador manual para limpiar órdenes expiradas (para Cron Job)
-// --- ESTA FUNCIÓN FUE ELIMINADA ---
-// export const triggerOrderCleanup = async (req, res) => { ... };
-// --- FIN CAMBIO ---
 
 export const trackOrder = async (req, res) => {
     try {
@@ -393,13 +361,13 @@ export const trackOrder = async (req, res) => {
         if (!orderId || !email) {
             return res.status(400).json({ msg: 'Se requiere ID de orden y email.' });
         }
-        
-        // Search by orderNumber if it's a number, else by _id
+
+        // Search by _id
         let query = { 'customerInfo.email': email.toLowerCase() };
         if (!isNaN(orderId)) {
-            query.orderNumber = Number(orderId);
+            query._id = Number(orderId);
         } else {
-            query._id = orderId;
+            return res.status(400).json({ msg: 'Formato de ID inválido.' });
         }
 
         const order = await Order.findOne(query);
@@ -423,11 +391,6 @@ export const updateOrderStatus = async (req, res) => {
     if (!status || !['completada', 'cancelada'].includes(status)) {
         return res.status(400).json({ msg: 'Estado no válido. Solo se permite "completada" o "cancelada".' });
     }
-
-    // --- CAMBIO: INICIO ELIMINACIÓN DE TRANSACCIÓN ---
-    // const session = await mongoose.startSession();
-    // session.startTransaction();
-    // --- FIN CAMBIO ---
 
     try {
         // --- CAMBIO ---

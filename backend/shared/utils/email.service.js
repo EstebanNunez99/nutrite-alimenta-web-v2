@@ -112,7 +112,7 @@ export const sendOrderNotification = async (order) => {
         // Enviar al Admin
         const resAdmin = await sendEmail({
             to: process.env.EMAIL_USER,
-            subject: `Nueva Orden Recibida #${order._id.toString().slice(-6)} - Nutrirte Alimenta`,
+            subject: `Nueva Orden Recibida #${order._id} - Nutrirte Alimenta`,
             html: htmlContent
         });
         console.log('Email de notificación enviado al ADMIN. ID:', resAdmin.id);
@@ -125,7 +125,7 @@ export const sendOrderNotification = async (order) => {
                     <p>Muchas gracias por tu compra. Hemos recibido tu pedido y lo estamos procesando.</p>
                     
                     <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                        <h3 style="margin-top: 0;">Resumen del Pedido #${order._id.toString().slice(-6)}</h3>
+                        <h3 style="margin-top: 0;">Resumen del Pedido #${order._id}</h3>
                         <ul>
                             ${order.items.map(item => `
                                 <li>
@@ -154,7 +154,7 @@ export const sendOrderNotification = async (order) => {
 
             const resClient = await sendEmail({
                 to: order.customerInfo.email,
-                subject: `¡Recibimos tu pedido! #${order._id.toString().slice(-6)} - Nutrirte Alimenta`,
+                subject: `¡Recibimos tu pedido! #${order._id} - Nutrirte Alimenta`,
                 html: htmlClient
             });
             console.log('Email de confirmación enviado al CLIENTE. ID:', resClient.id);

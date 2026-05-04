@@ -147,7 +147,7 @@ const OrderDetailPage = () => {
     return (
         <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '2rem', backgroundColor: '#fff', borderRadius: '8px', boxShadow: 'var(--sombra-suave)' }}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Detalle de la Orden #{order.orderNumber || order._id.slice(-6).toUpperCase()}</h1>
+                <h1 className={styles.title}>Detalle de la Orden #{order._id}</h1>
                 {usuario && usuario.rol === 'admin' && (
                     <Button onClick={sendEmail} variant="primary" style={{ marginLeft: 'auto' }}>
                         📧 Enviar Email

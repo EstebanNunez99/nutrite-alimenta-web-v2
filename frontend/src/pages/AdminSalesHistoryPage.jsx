@@ -307,7 +307,7 @@ const AdminSalesHistoryPage = () => {
                                                 className={styles.orderLink}
                                                 onClick={() => navigate(`/orden/${order._id}`)}
                                             >
-                                                {order._id.substring(0, 8)}...
+                                                {order._id}
                                             </button>
                                         </td>
                                         <td>
