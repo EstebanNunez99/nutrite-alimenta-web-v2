@@ -10,7 +10,15 @@ import Product from './product.model.js';
 export const createProduct = async (req, res) => {
     try {
         const { nombre, descripcion, precio, stock, categoria, imagen, tipo } = req.body;
-        const vendedor = req.usuario.id;
+
+        if (!req.usuario || (!req.usuario.id && !req.usuario._id)) {
+            return res.status(401).json({ msg: 'Usuario no autenticado.' });
+        }
+
+        const vendedor = Number(req.usuario.id || req.usuario._id);
+        if (Number.isNaN(vendedor)) {
+            return res.status(400).json({ msg: 'ID de vendedor inválido.' });
+        }
 
         // Verificamos si ya existe un producto con ese nombre
         const productoExistente = await Product.findOne({ nombre });

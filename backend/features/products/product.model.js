@@ -53,7 +53,7 @@ const productSchema = new mongoose.Schema({
     vendedor: {
         type: Number,
         ref: 'User', // Hace referencia a nuestro modelo 'User'
-        required: false
+        required: true
     }
 }, {
     timestamps: true // Crea automáticamente createdAt y updatedAt

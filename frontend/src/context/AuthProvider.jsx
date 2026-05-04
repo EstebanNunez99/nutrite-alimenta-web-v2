@@ -21,8 +21,9 @@ const AuthProvider = ({ children }) => {
         if (token) {
             api.get('/users/profile')
                 .then(res => {
-                    if (res.data.rol === 'admin') {
-                        setUsuario(res.data);
+                    const userData = res.data;
+                    if (userData && userData.rol === 'admin') {
+                        setUsuario(userData);
                         setIsAuthenticated(true);
                     } else {
                         logout();

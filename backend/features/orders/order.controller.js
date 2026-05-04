@@ -1,6 +1,7 @@
 // backend/features/orders/order.controller.js
 
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import Order from './order.model.js';
 import Product from '../products/product.model.js';
 import { sendOrderNotification, sendDemandSummary } from '../../shared/utils/email.service.js';
@@ -11,6 +12,18 @@ import { sendOrderNotification, sendDemandSummary } from '../../shared/utils/ema
 export const createOrder = async (req, res) => {
 
     try {
+        const token = req.header('x-auth-token');
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                if (decoded?.usuario?.rol === 'admin') {
+                    return res.status(403).json({ msg: 'Los administradores no pueden crear órdenes como clientes.' });
+                }
+            } catch (error) {
+                // No hacemos nada si el token es inválido, seguimos como invitado.
+            }
+        }
+
         const {
             customerInfo,
             shippingAddress,
@@ -393,11 +406,17 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     try {
-        // --- CAMBIO ---
-        const order = await Order.findById(orderId); // Sin .session(session)
-        // --- FIN CAMBIO ---
+        if (!orderId) {
+            return res.status(400).json({ msg: 'ID de orden inválido.' });
+        }
+
+        const numericOrderId = Number(orderId);
+        if (Number.isNaN(numericOrderId)) {
+            return res.status(400).json({ msg: 'ID de orden inválido.' });
+        }
+
+        const order = await Order.findOne({ _id: numericOrderId });
         if (!order) {
-            // await session.abortTransaction(); // Eliminado
             return res.status(404).json({ msg: 'Orden no encontrada.' });
         }
 
