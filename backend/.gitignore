@@ -1,4 +1,8 @@
 .env
 node_modules
-createAdmin.js
-clearOrders.js
+create_admin.js
+drop_db.js
+reset_order_counter.js
+test_db.js
+test_order.js
+test_orders_count.js
