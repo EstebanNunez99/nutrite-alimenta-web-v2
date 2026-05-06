@@ -40,27 +40,30 @@ const app = express();
 conectarDB();
 
 // 4. Middlewares
-app.use(cors())
-// app.use(cors({
-//     origin: (origin, callback) => {
-//         const ACCEPTED_ORIGINS = [
-//             process.env.FRONTEND_URL,
-//             'http://localhost:5173',
-//             'http://127.0.0.1:5173'
-//         ].filter(Boolean); // Filtrar valores nulos/undefined
+app.use(cors({
+    origin: (origin, callback) => {
+        const ACCEPTED_ORIGINS = [
+            process.env.FRONTEND_URL,
+            'http://localhost:3000',
+            'http://localhost:5173',
+            'http://127.0.0.1:3000',
+            'http://127.0.0.1:5173'
+        ].filter(Boolean);
 
-//         if (!origin) return callback(null, true);
-//         if (ACCEPTED_ORIGINS.includes(origin)) {
-//             return callback(null, true);
-//         }
+        // Permitir requests sin origin (ej. Postman, curl, server-to-server)
+        if (!origin) return callback(null, true);
 
-//         console.log('Bloqueado por CORS:', origin); // Log para depuración
-//         return callback(new Error('No permitido por CORS'));
-//     },
-//     credentials: true,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
-// }));
+        if (ACCEPTED_ORIGINS.includes(origin)) {
+            return callback(null, true);
+        }
+
+        console.log('⛔ Bloqueado por CORS:', origin);
+        return callback(new Error('No permitido por CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}));
 
 app.use(express.json({ extended: true })); // Para poder leer JSON en el body
 
